@@ -1,66 +1,52 @@
+repositories:
+  - name: parity
+    url: https://paritytech.github.io/helm-charts/
+
 helmDefaults:
   createNamespace: false
   waitForJobs: true
 
-environments:
-  local:
-    values:
-    - usePersistentStorage: false
-    - ingress:
-        enabled: false
-  default:
-    values:
-    - usePersistentStorage: true
-    - ingress:
-        enabled: true
-
-namespace: arrakis-evolution-chain
-
 releases:
-- name: freeverse0
-  chart: ./laos-evolution-node
-  values:
-  - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
-  - image:
-      tag: {{ requiredEnv "TAG" }}
-      args:
-      - --chain=arrakis
-      - --validator
-      - --name=freeverse0
-  - service:
-      type: LoadBalancer
-      ports:
-        p2p: true
-
-- name: freeverse1
-  chart: ./laos-evolution-node
-  values:
-  - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
-  - image:
-      tag: {{ requiredEnv "TAG" }}
-      args:
-      - --chain=arrakis
-      - --validator
-      - --name=freeverse1
-  - service:
-      type: LoadBalancer
-      ports:
-        p2p: true
-
-- name: freeverse2
-  chart: ./laos-evolution-node
-  values:
-  - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
-  - image:
-      tag: {{ requiredEnv "TAG" }}
-      args:
-      - --chain=arrakis
-      - --name=freeverse2
-      - --ws-external
-      - --rpc-cors=all
-  - service:
-      ports:
-        ws: true
-  - ingress:
-      enabled: {{ .Values.ingress.enabled }}
-      host: "arrakis.gorengine.com"
+  - name: freeverse0
+    namespace: ziggy-pandora
+    chart: parity/node
+    version: 4.7.2
+    values:
+      - image:
+          repository: freeverseio/laos-evolution-node
+          tag: 520f7dec5f5121da1b1a8df5136317821e093554
+      - node:
+          chain: local
+          replicas: 1
+          customChainspecUrl: "https://raw.githubusercontent.com/freeverseio/laos-evolution-node/feature/new_chain_spec/specs/arrakis-v0.json"
+          role: authority
+          # flags:
+          #   - "--alice"
+          chainData:
+            storageClass: do-block-storage
+          perNodeServices:
+            relayP2pService:
+              enabled: true
+              type: LoadBalancer
+          allowUnsafeRpcMethods: true
+  - name: freeverse1
+    namespace: ziggy-pandora
+    chart: parity/node
+    version: 4.7.2
+    values:
+      - image:
+          repository: freeverseio/laos-evolution-node
+          tag: 520f7dec5f5121da1b1a8df5136317821e093554
+      - node:
+          chain: rococo-freeverse
+          replicas: 1
+          customChainspecUrl: "https://raw.githubusercontent.com/freeverseio/laos-evolution-node/feature/new_chain_spec/specs/arrakis-v0.json"
+          role: authority
+          # flags:
+          #   - "--charlie"
+          chainData:
+            storageClass: do-block-storage
+          perNodeServices:
+            relayP2pService:
+              enabled: true
+          allowUnsafeRpcMethods: true
