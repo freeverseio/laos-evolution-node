@@ -3,6 +3,7 @@
   "id": "arrakis_evolution_chain",
   "chainType": "Local",
   "bootNodes": [
+    "/ip4/161.35.247.139/tcp/30333/p2p/12D3KooWCG4ktp4DwsBHn9ETZa5x23ZX9AsH9fcDUEWcCqza8JcP"
   ],
   "telemetryEndpoints": [
     ["wss://telemetry.polkadot.io/submit/", 0]
