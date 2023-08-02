@@ -28,4 +28,10 @@ std = [
     "sp-core/std",
     "sp-io/std",
     "sp-runtime/std",
+    "impl-serde/std",
+    "libsecp256k1/std",
+    "log/std",
+    "parity-scale-codec/std",
+    "serde/std",
+    "sha3/std",
 ]
