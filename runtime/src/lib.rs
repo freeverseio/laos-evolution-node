@@ -6,14 +6,24 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-use fp_account::EthereumSignature;
-use pallet_grandpa::AuthorityId as GrandpaId;
+pub mod ownership_parachain_messages;
+pub mod rialto_messages;
+pub mod weights;
+pub mod xcm_config;
+
+use bp_evochain::{BlakeTwoAndKeccak256, NORMAL_DISPATCH_RATIO};
+use bp_parachains::SingleParaStoredHeaderDataBuilder;
+use bp_runtime::HeaderId;
+use pallet_grandpa::{
+	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
+};
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+use sp_consensus_beefy::{crypto::AuthorityId as BeefyId, mmr::MmrLeafVersion, ValidatorSet};
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, One, Verify},
+	traits::{Block as BlockT, Keccak256, NumberFor, One, OpaqueKeys},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
@@ -37,9 +47,24 @@ pub use frame_support::{
 	},
 	StorageValue,
 };
+
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
+pub use pallet_bridge_grandpa::Call as BridgeGrandpaCall;
+pub use pallet_bridge_messages::Call as MessagesCall;
+pub use pallet_bridge_parachains::Call as BridgeParachainsCall;
+pub use pallet_sudo::Call as SudoCall;
 pub use pallet_timestamp::Call as TimestampCall;
+pub use pallet_xcm::Call as XcmCall;
+
+use bridge_runtime_common::{
+	generate_bridge_reject_obsolete_headers_and_messages,
+	refund_relayer_extension::{
+		ActualFeeRefund, RefundBridgedParachainMessages, RefundableMessagesLane,
+		RefundableParachain,
+	},
+};
+
 use pallet_transaction_payment::{ConstFeeMultiplier, CurrencyAdapter, Multiplier};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -49,48 +74,32 @@ pub use sp_runtime::{Perbill, Permill};
 pub use pallet_template;
 
 /// An index to a block.
-pub type BlockNumber = u32;
+pub type BlockNumber = bp_evochain::BlockNumber;
 
 /// The type for storing how many extrinsics an account has signed.
-pub type Nonce = u32;
+pub type Nonce = bp_evochain::Nonce;
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
-pub type Signature = EthereumSignature;
+pub type Signature = bp_evochain::Signature;
 
 /// Some way of identifying an account on the chain. We intentionally make it equivalent
 /// to the public key of our transaction signing scheme.
-pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
+pub type AccountId = bp_evochain::AccountId;
 
 /// Balance of an account.
-pub type Balance = u128;
+pub type Balance = bp_evochain::Balance;
 
 /// Index of a transaction in the chain.
 pub type Index = u32;
 
 /// A hash of some data used by the chain.
-pub type Hash = sp_core::H256;
+pub type Hash = bp_evochain::Hash;
 
-/// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
-/// the specifics of the runtime. They can then be made to be agnostic over specific formats
-/// of data like extrinsics, allowing for them to continue syncing the network through upgrades
-/// to even the core data structures.
-pub mod opaque {
-	use super::*;
-
-	pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
-
-	/// Opaque block header type.
-	pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
-	/// Opaque block type.
-	pub type Block = generic::Block<Header, UncheckedExtrinsic>;
-	/// Opaque block identifier type.
-	pub type BlockId = generic::BlockId<Block>;
-
-	impl_opaque_keys! {
-		pub struct SessionKeys {
-			pub aura: Aura,
-			pub grandpa: Grandpa,
-		}
+impl_opaque_keys! {
+	pub struct SessionKeys {
+		pub aura: Aura,
+		pub beefy: Beefy,
+		pub grandpa: Grandpa,
 	}
 }
 
@@ -119,14 +128,14 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 /// up by `pallet_aura` to implement `fn slot_duration()`.
 ///
 /// Change this to adjust the block time.
-pub const MILLISECS_PER_BLOCK: u64 = 6000;
+pub const MILLISECS_PER_BLOCK: u64 = bp_evochain::MILLISECS_PER_BLOCK;
 
 // NOTE: Currently it is not possible to change the slot duration after the chain has started.
 //       Attempting to do so will brick block production.
-pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
+pub const SLOT_DURATION: u64 = bp_evochain::SLOT_DURATION;
 
 // Time is measured by number of blocks.
-pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
+pub const MINUTES: BlockNumber = 60_000 / (bp_evochain::MILLISECS_PER_BLOCK as BlockNumber);
 pub const HOURS: BlockNumber = MINUTES * 60;
 pub const DAYS: BlockNumber = HOURS * 24;
 
@@ -135,8 +144,6 @@ pub const DAYS: BlockNumber = HOURS * 24;
 pub fn native_version() -> NativeVersion {
 	NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
 }
-
-const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 2400;
@@ -172,7 +179,7 @@ impl frame_system::Config for Runtime {
 	/// The type for hashing blocks and tries.
 	type Hash = Hash;
 	/// The hashing algorithm used.
-	type Hashing = BlakeTwo256;
+	type Hashing = BlakeTwoAndKeccak256;
 	/// The nonce type.
 	type Nonce = Nonce;
 	/// The ubiquitous event type.
@@ -211,6 +218,16 @@ impl pallet_aura::Config for Runtime {
 	type AllowMultipleBlocksPerSlot = ConstBool<false>;
 }
 
+impl pallet_beefy::Config for Runtime {
+	type BeefyId = BeefyId;
+	type MaxAuthorities = ConstU32<10>;
+	type MaxSetIdSessionEntries = ConstU64<0>;
+	type OnNewValidatorSet = MmrLeaf;
+	type WeightInfo = ();
+	type KeyOwnerProof = sp_core::Void;
+	type EquivocationReportSystem = ();
+}
+
 impl pallet_grandpa::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 
@@ -222,6 +239,54 @@ impl pallet_grandpa::Config for Runtime {
 	type EquivocationReportSystem = ();
 }
 
+/// MMR helper types.
+mod mmr {
+	use super::Runtime;
+	pub use pallet_mmr::primitives::*;
+
+	pub type Leaf = <<Runtime as pallet_mmr::Config>::LeafData as LeafDataProvider>::LeafData;
+	pub type Hashing = <Runtime as pallet_mmr::Config>::Hashing;
+	pub type Hash = <Hashing as sp_runtime::traits::Hash>::Output;
+}
+
+impl pallet_mmr::Config for Runtime {
+	const INDEXING_PREFIX: &'static [u8] = b"mmr";
+	type Hashing = Keccak256;
+	type OnNewRoot = pallet_beefy_mmr::DepositBeefyDigest<Runtime>;
+	type WeightInfo = ();
+	type LeafData = pallet_beefy_mmr::Pallet<Runtime>;
+}
+
+parameter_types! {
+	/// Version of the produced MMR leaf.
+	///
+	/// The version consists of two parts;
+	/// - `major` (3 bits)
+	/// - `minor` (5 bits)
+	///
+	/// `major` should be updated only if decoding the previous MMR Leaf format from the payload
+	/// is not possible (i.e. backward incompatible change).
+	/// `minor` should be updated if fields are added to the previous MMR Leaf, which given SCALE
+	/// encoding does not prevent old leafs from being decoded.
+	///
+	/// Hence we expect `major` to be changed really rarely (think never).
+	/// See [`MmrLeafVersion`] type documentation for more details.
+	pub LeafVersion: MmrLeafVersion = MmrLeafVersion::new(0, 0);
+}
+
+pub struct BeefyDummyDataProvider;
+
+impl sp_consensus_beefy::mmr::BeefyDataProvider<()> for BeefyDummyDataProvider {
+	fn extra_data() {}
+}
+
+impl pallet_beefy_mmr::Config for Runtime {
+	type LeafVersion = LeafVersion;
+	type BeefyAuthorityToMerkleLeaf = pallet_beefy_mmr::BeefyEcdsaToEthereum;
+	type LeafExtra = ();
+	type BeefyDataProvider = BeefyDummyDataProvider;
+}
+
 impl pallet_timestamp::Config for Runtime {
 	/// A timestamp: milliseconds since the unix epoch.
 	type Moment = u64;
@@ -230,9 +295,9 @@ impl pallet_timestamp::Config for Runtime {
 	type WeightInfo = ();
 }
 
-/// Existential deposit.
-pub const EXISTENTIAL_DEPOSIT: u128 = 500;
-
+parameter_types! {
+	pub const ExistentialDeposit: bp_evochain::Balance = 500;
+}
 impl pallet_balances::Config for Runtime {
 	type MaxLocks = ConstU32<50>;
 	type MaxReserves = ();
@@ -242,7 +307,7 @@ impl pallet_balances::Config for Runtime {
 	/// The ubiquitous event type.
 	type RuntimeEvent = RuntimeEvent;
 	type DustRemoval = ();
-	type ExistentialDeposit = ConstU128<EXISTENTIAL_DEPOSIT>;
+	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 	type FreezeIdentifier = ();
@@ -270,6 +335,160 @@ impl pallet_sudo::Config for Runtime {
 	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+	/// Authorities are changing every 5 minutes.
+	pub const Period: BlockNumber = bp_evochain::SESSION_LENGTH;
+	pub const Offset: BlockNumber = 0;
+	pub const RelayerStakeReserveId: [u8; 8] = *b"brdgrlrs";
+}
+
+impl pallet_session::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type ValidatorId = <Self as frame_system::Config>::AccountId;
+	type ValidatorIdOf = ();
+	type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
+	type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
+	type SessionManager = pallet_shift_session_manager::Pallet<Runtime>;
+	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+	type Keys = SessionKeys;
+	// TODO: update me (https://github.com/paritytech/parity-bridges-common/issues/78)
+	type WeightInfo = ();
+}
+
+impl pallet_bridge_relayers::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Reward = Balance;
+	type PaymentProcedure =
+		bp_relayers::PayRewardFromAccount<pallet_balances::Pallet<Runtime>, AccountId>;
+	type StakeAndSlash = pallet_bridge_relayers::StakeAndSlashNamed<
+		AccountId,
+		BlockNumber,
+		Balances,
+		RelayerStakeReserveId,
+		ConstU64<1_000>,
+		ConstU64<8>,
+	>;
+	type WeightInfo = ();
+}
+
+pub type RialtoGrandpaInstance = ();
+
+impl pallet_bridge_grandpa::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type BridgedChain = bp_rialto::Rialto;
+	type MaxFreeMandatoryHeadersPerBlock = ConstU32<4>;
+	type HeadersToKeep = ConstU32<{ bp_rialto::DAYS }>;
+	type WeightInfo = pallet_bridge_grandpa::weights::BridgeWeight<Runtime>;
+}
+
+parameter_types! {
+	pub const MaxMessagesToPruneAtOnce: bp_messages::MessageNonce = 8;
+	pub const RootAccountForPayments: Option<AccountId> = None;
+}
+
+/// Instance of the messages pallet used to relay messages to/from Rialto chain.
+pub type WithRialtoMessagesInstance = ();
+
+impl pallet_shift_session_manager::Config for Runtime {}
+
+impl pallet_bridge_messages::Config<WithRialtoMessagesInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
+
+	type ThisChain = bp_evochain::Evochain;
+	type BridgedChain = bp_rialto::Rialto;
+	type BridgedHeaderChain = BridgeRialtoGrandpa;
+
+	type OutboundPayload = bridge_runtime_common::messages_xcm_extension::XcmAsPlainPayload;
+	type InboundPayload = bridge_runtime_common::messages_xcm_extension::XcmAsPlainPayload;
+
+	type DeliveryPayments = ();
+	type DeliveryConfirmationPayments = pallet_bridge_relayers::DeliveryConfirmationPaymentsAdapter<
+		Runtime,
+		WithRialtoMessagesInstance,
+		frame_support::traits::ConstU64<100_000>,
+	>;
+
+	type MessageDispatch = crate::rialto_messages::FromRialtoMessageDispatch;
+}
+
+/// Instance of messages pallet used to relay messages to/from Ownership parachain
+pub type WithOwnershipParachainMessagesInstance = pallet_bridge_messages::Instance1;
+
+impl pallet_bridge_messages::Config<WithOwnershipParachainMessagesInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
+
+	type ThisChain = bp_evochain::Evochain;
+	type BridgedChain = bp_ownership_parachain::OwnershipParachain;
+	type BridgedHeaderChain = pallet_bridge_parachains::ParachainHeaders<
+		Runtime,
+		WithRialtoParachainsInstance,
+		bp_ownership_parachain::OwnershipParachain,
+	>;
+
+	type OutboundPayload = bridge_runtime_common::messages_xcm_extension::XcmAsPlainPayload;
+	type InboundPayload = bridge_runtime_common::messages_xcm_extension::XcmAsPlainPayload;
+
+	type DeliveryPayments = ();
+	type DeliveryConfirmationPayments = pallet_bridge_relayers::DeliveryConfirmationPaymentsAdapter<
+		Runtime,
+		WithOwnershipParachainMessagesInstance,
+		frame_support::traits::ConstU64<100_000>,
+	>;
+
+	type MessageDispatch =
+		crate::ownership_parachain_messages::FromOwnershipParachainMessageDispatch;
+}
+
+/// Instance of the with-Ownership parachains pallet.
+pub type WithOwnershipParachainsInstance = ();
+
+parameter_types! {
+	pub const RialtoParasPalletName: &'static str = bp_rialto::PARAS_PALLET_NAME;
+	pub const WestendParasPalletName: &'static str = bp_westend::PARAS_PALLET_NAME;
+	pub const MaxRialtoParaHeadDataSize: u32 = bp_rialto::MAX_NESTED_PARACHAIN_HEAD_DATA_SIZE;
+	pub const MaxWestendParaHeadDataSize: u32 = bp_westend::MAX_NESTED_PARACHAIN_HEAD_DATA_SIZE;
+}
+
+/// Instance of the with-Rialto parachains pallet.
+pub type WithRialtoParachainsInstance = ();
+
+impl pallet_bridge_parachains::Config<WithRialtoParachainsInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = pallet_bridge_parachains::weights::BridgeWeight<Runtime>;
+	type BridgesGrandpaPalletInstance = RialtoGrandpaInstance;
+	type ParasPalletName = RialtoParasPalletName;
+	type ParaStoredHeaderDataBuilder =
+		SingleParaStoredHeaderDataBuilder<bp_ownership_parachain::OwnershipParachain>;
+	type HeadsToKeep = ConstU32<1024>;
+	type MaxParaHeadDataSize = MaxRialtoParaHeadDataSize;
+}
+
+// this config is totally incorrect - the pallet is not actually used at this runtime. We need
+// it only to be able to run benchmarks and make required traits (and default weights for tests).
+impl pallet_xcm_bridge_hub_router::Config for Runtime {
+	type WeightInfo = ();
+
+	type UniversalLocation = xcm_config::UniversalLocation;
+	type SiblingBridgeHubLocation = xcm_config::TokenLocation;
+	type BridgedNetworkId = xcm_config::RialtoNetwork;
+
+	type ToBridgeHubSender = xcm_config::XcmRouter;
+	type WithBridgeHubChannel = xcm_config::EmulatedSiblingXcmpChannel;
+
+	type BaseFee = ConstU128<1_000_000_000>;
+	type ByteFee = ConstU128<1_000>;
+	type FeeAsset = xcm_config::TokenAssetId;
+}
+
+impl pallet_utility::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = ();
+}
+
 /// Configure the pallet-template in pallets/template.
 impl pallet_template::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -280,21 +499,71 @@ impl pallet_template::Config for Runtime {
 construct_runtime!(
 	pub struct Runtime {
 		System: frame_system,
-		Timestamp: pallet_timestamp,
+		Sudo: pallet_sudo,
+		Utility: pallet_utility,
+
+		// Must be before session.
 		Aura: pallet_aura,
-		Grandpa: pallet_grandpa,
+
+		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
 		TransactionPayment: pallet_transaction_payment,
-		Sudo: pallet_sudo,
+
+		// Consensus support.
+		Session: pallet_session,
+		Grandpa: pallet_grandpa,
+		ShifSessionManager: pallet_shift_session_manager,
+
+		// BEEFY Bridges support.
+		Beefy: pallet_beefy,
+		Mmr: pallet_mmr,
+		MmrLeaf: pallet_beefy_mmr,
+
+		// Rialto Bridges support.
+		BridgeRelayers: pallet_bridge_relayers,
+		BridgeRialtoGrandpa: pallet_bridge_grandpa,
+		BridgeRialtoMessages: pallet_bridge_messages,
+
+		// Ownership parachain bridge modules.
+		BridgeRialtoParachains: pallet_bridge_parachains,
+		BridgeOwnershipParachainMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>},
+
+		// XCM
+		XcmPallet: pallet_xcm,
+		XcmBridgeHubRouter: pallet_xcm_bridge_hub_router,
+
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
 	}
 );
 
+generate_bridge_reject_obsolete_headers_and_messages! {
+	RuntimeCall, AccountId,
+	// Grandpa
+	BridgeRialtoGrandpa,
+	// Parachains
+	BridgeRialtoParachains,
+	//Messages
+	BridgeRialtoMessages, BridgeOwnershipParachainMessages
+}
+
+bp_runtime::generate_static_str_provider!(BridgeRefundRialtoPara2000Lane0Msgs);
+
+/// Signed extension that refunds relayers that are delivering messages from the Rialto parachain.
+pub type PriorityBoostPerMessage = ConstU64<351_343_108>;
+pub type BridgeRefundOwnershipParachainMessages = RefundBridgedParachainMessages<
+	Runtime,
+	RefundableParachain<WithRialtoParachainsInstance, bp_ownership_parachain::OwnershipParachain>,
+	RefundableMessagesLane<Runtime, WithOwnershipParachainMessagesInstance>,
+	ActualFeeRefund<Runtime>,
+	PriorityBoostPerMessage,
+	StrBridgeRefundRialtoPara2000Lane0Msgs,
+>;
+
 /// The address format for describing accounts.
 pub type Address = AccountId;
 /// Block header type as expected by this runtime.
-pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
+pub type Header = bp_evochain::Header;
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// The SignedExtension to the basic transaction logic.
@@ -307,6 +576,8 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+	BridgeRejectObsoleteHeadersAndMessages,
+	BridgeRefundOwnershipParachainMessages,
 );
 
 /// Unchecked extrinsic type as expected by this runtime.
@@ -416,43 +687,192 @@ impl_runtime_apis! {
 
 	impl sp_session::SessionKeys<Block> for Runtime {
 		fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
-			opaque::SessionKeys::generate(seed)
+			SessionKeys::generate(seed)
 		}
 
 		fn decode_session_keys(
 			encoded: Vec<u8>,
 		) -> Option<Vec<(Vec<u8>, KeyTypeId)>> {
-			opaque::SessionKeys::decode_into_raw_public_keys(&encoded)
+			SessionKeys::decode_into_raw_public_keys(&encoded)
 		}
 	}
 
-	impl sp_consensus_grandpa::GrandpaApi<Block> for Runtime {
-		fn grandpa_authorities() -> sp_consensus_grandpa::AuthorityList {
-			Grandpa::grandpa_authorities()
+	impl sp_consensus_beefy::BeefyApi<Block> for Runtime {
+		fn beefy_genesis() -> Option<BlockNumber> {
+			Beefy::genesis_block()
 		}
 
-		fn current_set_id() -> sp_consensus_grandpa::SetId {
-			Grandpa::current_set_id()
+		fn validator_set() -> Option<ValidatorSet<BeefyId>> {
+			Beefy::validator_set()
 		}
 
 		fn submit_report_equivocation_unsigned_extrinsic(
-			_equivocation_proof: sp_consensus_grandpa::EquivocationProof<
+			_equivocation_proof: sp_consensus_beefy::EquivocationProof<
+				NumberFor<Block>,
+				sp_consensus_beefy::crypto::AuthorityId,
+				sp_consensus_beefy::crypto::Signature
+			>,
+			_key_owner_proof: sp_consensus_beefy::OpaqueKeyOwnershipProof,
+		) -> Option<()> { None }
+
+		fn generate_key_ownership_proof(
+			_set_id: sp_consensus_beefy::ValidatorSetId,
+			_authority_id: sp_consensus_beefy::crypto::AuthorityId,
+		) -> Option<sp_consensus_beefy::OpaqueKeyOwnershipProof> { None }
+	}
+
+	impl pallet_mmr::primitives::MmrApi<
+		Block,
+		mmr::Hash,
+		BlockNumber,
+	> for Runtime {
+		fn mmr_root() -> Result<mmr::Hash, mmr::Error> {
+			Ok(Mmr::mmr_root())
+		}
+
+		fn mmr_leaf_count() -> Result<mmr::LeafIndex, mmr::Error> {
+			Ok(Mmr::mmr_leaves())
+		}
+
+		fn generate_proof(
+			block_numbers: Vec<BlockNumber>,
+			best_known_block_number: Option<BlockNumber>,
+		) -> Result<(Vec<mmr::EncodableOpaqueLeaf>, mmr::Proof<mmr::Hash>), mmr::Error> {
+			Mmr::generate_proof(block_numbers, best_known_block_number).map(
+				|(leaves, proof)| {
+					(
+						leaves
+							.into_iter()
+							.map(|leaf| mmr::EncodableOpaqueLeaf::from_leaf(&leaf))
+							.collect(),
+						proof,
+					)
+				},
+			)
+		}
+
+		fn verify_proof(leaves: Vec<mmr::EncodableOpaqueLeaf>, proof: mmr::Proof<mmr::Hash>)
+			-> Result<(), mmr::Error>
+		{
+			let leaves = leaves.into_iter().map(|leaf|
+				leaf.into_opaque_leaf()
+				.try_decode()
+				.ok_or(mmr::Error::Verify)).collect::<Result<Vec<mmr::Leaf>, mmr::Error>>()?;
+			Mmr::verify_leaves(leaves, proof)
+		}
+
+		fn verify_proof_stateless(
+			root: mmr::Hash,
+			leaves: Vec<mmr::EncodableOpaqueLeaf>,
+			proof: mmr::Proof<mmr::Hash>
+		) -> Result<(), mmr::Error> {
+			let nodes = leaves.into_iter().map(|leaf|mmr::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
+			pallet_mmr::verify_leaves_proof::<mmr::Hashing, _>(root, nodes, proof)
+		}
+	}
+
+	impl fg_primitives::GrandpaApi<Block> for Runtime {
+		fn current_set_id() -> fg_primitives::SetId {
+			Grandpa::current_set_id()
+		}
+
+		fn grandpa_authorities() -> GrandpaAuthorityList {
+			Grandpa::grandpa_authorities()
+		}
+
+		fn submit_report_equivocation_unsigned_extrinsic(
+			equivocation_proof: fg_primitives::EquivocationProof<
 				<Block as BlockT>::Hash,
 				NumberFor<Block>,
 			>,
-			_key_owner_proof: sp_consensus_grandpa::OpaqueKeyOwnershipProof,
+			key_owner_proof: fg_primitives::OpaqueKeyOwnershipProof,
 		) -> Option<()> {
-			None
+			let key_owner_proof = key_owner_proof.decode()?;
+
+			Grandpa::submit_unsigned_equivocation_report(
+				equivocation_proof,
+				key_owner_proof,
+			)
 		}
 
 		fn generate_key_ownership_proof(
-			_set_id: sp_consensus_grandpa::SetId,
+			_set_id: fg_primitives::SetId,
 			_authority_id: GrandpaId,
-		) -> Option<sp_consensus_grandpa::OpaqueKeyOwnershipProof> {
+		) -> Option<fg_primitives::OpaqueKeyOwnershipProof> {
 			// NOTE: this is the only implementation possible since we've
 			// defined our key owner proof type as a bottom type (i.e. a type
 			// with no values).
 			None
+		}
+	}
+
+	impl bp_rialto::RialtoFinalityApi<Block> for Runtime {
+		fn best_finalized() -> Option<HeaderId<bp_rialto::Hash, bp_rialto::BlockNumber>> {
+			BridgeRialtoGrandpa::best_finalized()
+		}
+
+		fn accepted_grandpa_finality_proofs(
+		) -> Vec<bp_header_chain::justification::GrandpaJustification<bp_rialto::Header>> {
+			BridgeRialtoGrandpa::accepted_finality_proofs()
+		}
+	}
+
+	impl bp_ownership_parachain::OwnershipParachainFinalityApi<Block> for Runtime {
+		fn best_finalized() -> Option<HeaderId<bp_rialto::Hash, bp_rialto::BlockNumber>> {
+			pallet_bridge_parachains::Pallet::<
+				Runtime,
+				WithRialtoParachainsInstance,
+			>::best_parachain_head_id::<bp_ownership_parachain::OwnershipParachain>().unwrap_or(None)
+		}
+	}
+
+	impl bp_rialto::ToRialtoOutboundLaneApi<Block> for Runtime {
+		fn message_details(
+			lane: bp_messages::LaneId,
+			begin: bp_messages::MessageNonce,
+			end: bp_messages::MessageNonce,
+		) -> Vec<bp_messages::OutboundMessageDetails> {
+			bridge_runtime_common::messages_api::outbound_message_details::<
+				Runtime,
+				WithRialtoMessagesInstance,
+			>(lane, begin, end)
+		}
+	}
+
+	impl bp_rialto::FromRialtoInboundLaneApi<Block> for Runtime {
+		fn message_details(
+			lane: bp_messages::LaneId,
+			messages: Vec<(bp_messages::MessagePayload, bp_messages::OutboundMessageDetails)>,
+		) -> Vec<bp_messages::InboundMessageDetails> {
+			bridge_runtime_common::messages_api::inbound_message_details::<
+				Runtime,
+				WithRialtoMessagesInstance,
+			>(lane, messages)
+		}
+	}
+
+	impl bp_ownership_parachain::ToOwnershipParachainOutboundLaneApi<Block> for Runtime {
+		fn message_details(
+			lane: bp_messages::LaneId,
+			begin: bp_messages::MessageNonce,
+			end: bp_messages::MessageNonce,
+		) -> Vec<bp_messages::OutboundMessageDetails> {
+			bridge_runtime_common::messages_api::outbound_message_details::<
+				Runtime,
+				WithOwnershipParachainMessagesInstance,
+			>(lane, begin, end)
+		}
+	}
+
+	impl bp_ownership_parachain::FromOwnershipParachainInboundLaneApi<Block> for Runtime {
+		fn message_details(
+			lane: bp_messages::LaneId,
+			messages: Vec<(bp_messages::MessagePayload, bp_messages::OutboundMessageDetails)>,
+		) -> Vec<bp_messages::InboundMessageDetails> {
+			bridge_runtime_common::messages_api::inbound_message_details::<
+				Runtime,
+				WithOwnershipParachainMessagesInstance,
+			>(lane, messages)
 		}
 	}
 
