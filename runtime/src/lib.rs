@@ -11,7 +11,7 @@ pub mod rialto_messages;
 pub mod weights;
 pub mod xcm_config;
 
-use bp_evochain::{BlakeTwoAndKeccak256, NORMAL_DISPATCH_RATIO};
+use bp_evochain::BlakeTwoAndKeccak256;
 use bp_parachains::SingleParaStoredHeaderDataBuilder;
 use bp_runtime::HeaderId;
 use pallet_grandpa::{
@@ -148,14 +148,6 @@ pub fn native_version() -> NativeVersion {
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 2400;
 	pub const Version: RuntimeVersion = VERSION;
-	/// We allow for 2 seconds of compute with a 6 second average block time.
-	pub BlockWeights: frame_system::limits::BlockWeights =
-		frame_system::limits::BlockWeights::with_sensible_defaults(
-			Weight::from_parts(2u64 * WEIGHT_REF_TIME_PER_SECOND, u64::MAX),
-			NORMAL_DISPATCH_RATIO,
-		);
-	pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
-		::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	pub const SS58Prefix: u8 = 42;
 }
 
@@ -165,9 +157,9 @@ impl frame_system::Config for Runtime {
 	/// The basic call filter to use in dispatchable.
 	type BaseCallFilter = frame_support::traits::Everything;
 	/// Block & extrinsics weights: base values and limits.
-	type BlockWeights = BlockWeights;
+	type BlockWeights = bp_evochain::BlockWeights;
 	/// The maximum length of a block (in bytes).
-	type BlockLength = BlockLength;
+	type BlockLength = bp_evochain::BlockLength;
 	/// The block type
 	type Block = Block;
 	/// The identifier used to distinguish between accounts.
@@ -417,7 +409,7 @@ pub type WithOwnershipParachainMessagesInstance = pallet_bridge_messages::Instan
 
 impl pallet_bridge_messages::Config<WithOwnershipParachainMessagesInstance> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
+	type WeightInfo = weights::OwnershipParachainMessagesWeightInfo<Runtime>;
 
 	type ThisChain = bp_evochain::Evochain;
 	type BridgedChain = bp_ownership_parachain::OwnershipParachain;
@@ -974,7 +966,7 @@ impl_runtime_apis! {
 			// have a backtrace here. If any of the pre/post migration checks fail, we shall stop
 			// right here and right now.
 			let weight = Executive::try_runtime_upgrade(checks).unwrap();
-			(weight, BlockWeights::get().max_block)
+			(weight, bp_evochain::BlockWeights::get().max_block)
 		}
 
 		fn execute_block(

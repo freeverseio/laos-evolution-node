@@ -147,7 +147,7 @@ mod tests {
 		// all deployments scripts, alerts and so on
 		assert_eq!(
 			*ToOwnershipParachainXcmBlobHauler::xcm_lane().as_ref(),
-			hex_literal::hex!("6aa61bff567db6b5d5f0cb815ee6d8f5ac630e222a95700cb3d594134e3805de")
+			hex_literal::hex!("e872ac5c5c5644402202ac5ab5f55d2bfc3b4c493dbb0bbf3807b34b13add417")
 				.into(),
 		);
 	}

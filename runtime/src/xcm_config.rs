@@ -186,7 +186,7 @@ impl xcm_executor::Config for XcmConfig {
 
 /// Type to convert an `Origin` type value into a `MultiLocation` value which represents an interior
 /// location of this chain.
-pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, RialtoNetwork>;
+pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, ThisNetwork>;
 
 #[cfg(feature = "runtime-benchmarks")]
 parameter_types! {
