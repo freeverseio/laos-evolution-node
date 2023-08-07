@@ -385,7 +385,7 @@ impl pallet_shift_session_manager::Config for Runtime {}
 
 impl pallet_bridge_messages::Config<WithRialtoMessagesInstance> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
+	type WeightInfo = weights::RialtoMessagesWeightInfo<Runtime>;
 
 	type ThisChain = bp_evochain::Evochain;
 	type BridgedChain = bp_rialto::Rialto;
