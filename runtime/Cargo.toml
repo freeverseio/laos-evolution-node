@@ -18,9 +18,6 @@ scale-info = { version = "2.5.0", default-features = false, features = ["derive"
 
 pallet-aura = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
-pallet-beefy = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
-pallet-mmr = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
-pallet-beefy-mmr = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 frame-support = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 pallet-grandpa = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 pallet-session = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
@@ -43,7 +40,6 @@ sp-session = { default-features = false, git = "https://github.com/paritytech/su
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 sp-transaction-pool = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 sp-version = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
-sp-consensus-beefy = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 
 # Used for the node template's RPCs
 frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
@@ -156,10 +152,6 @@ std = [
 	"xcm-executor/std",
 	# Consensus
 	"pallet-session/std",
-	"pallet-beefy-mmr/std",
-	"pallet-beefy/std",
-	"pallet-mmr/std",
-	"sp-consensus-beefy/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
@@ -176,7 +168,6 @@ runtime-benchmarks = [
 	"pallet-bridge-messages/runtime-benchmarks",
 	"pallet-bridge-parachains/runtime-benchmarks",
 	"pallet-bridge-relayers/runtime-benchmarks",
-	"pallet-mmr/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
@@ -196,13 +187,10 @@ try-runtime = [
 	"pallet-template/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
-	"pallet-beefy/try-runtime",
-	"pallet-beefy-mmr/try-runtime",
 	"pallet-bridge-grandpa/try-runtime",
 	"pallet-bridge-messages/try-runtime",
 	"pallet-bridge-parachains/try-runtime",
 	"pallet-bridge-relayers/try-runtime",
-	"pallet-mmr/try-runtime",
 	"pallet-session/try-runtime",
 	"pallet-shift-session-manager/try-runtime",
 	"pallet-utility/try-runtime",

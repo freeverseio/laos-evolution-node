@@ -85,10 +85,7 @@ impl pallet_bridge_messages::WeightInfoExt
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{
-		PriorityBoostPerMessage, RialtoGrandpaInstance, Runtime,
-		WithOwnershipParachainMessagesInstance,
-	};
+	use crate::{RialtoGrandpaInstance, Runtime, WithOwnershipParachainMessagesInstance};
 
 	use bridge_runtime_common::{
 		assert_complete_bridge_types,
@@ -134,7 +131,7 @@ mod tests {
 			},
 		});
 
-		// TODO: uncomment this and make it pass
+		// TODO: uncomment this and fix it
 		// bridge_runtime_common::priority_calculator::ensure_priority_boost_is_sane::<
 		// 	Runtime,
 		// 	WithOwnershipParachainMessagesInstance,

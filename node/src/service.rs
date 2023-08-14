@@ -72,8 +72,6 @@ pub fn new_partial(
 				FullSelectChain,
 			>,
 			sc_consensus_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
-			sc_consensus_beefy::BeefyVoterLinks<Block>,
-			sc_consensus_beefy::BeefyRPCLinks<Block>,
 			Option<Telemetry>,
 		),
 	>,
@@ -133,19 +131,11 @@ pub fn new_partial(
 		telemetry.as_ref().map(|x| x.handle()),
 	)?;
 
-	let (beefy_block_import, beefy_voter_links, beefy_rpc_links) =
-		sc_consensus_beefy::beefy_block_import_and_links(
-			grandpa_block_import.clone(),
-			backend.clone(),
-			client.clone(),
-			config.prometheus_registry().cloned(),
-		);
-
 	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 
 	let import_queue =
 		sc_consensus_aura::import_queue::<AuraPair, _, _, _, _, _>(ImportQueueParams {
-			block_import: beefy_block_import,
+			block_import: grandpa_block_import.clone(),
 			justification_import: Some(Box::new(grandpa_block_import.clone())),
 			client: client.clone(),
 			create_inherent_data_providers: move |_, ()| async move {
@@ -174,7 +164,7 @@ pub fn new_partial(
 		keystore_container,
 		select_chain,
 		transaction_pool,
-		other: (grandpa_block_import, grandpa_link, beefy_voter_links, beefy_rpc_links, telemetry),
+		other: (grandpa_block_import, grandpa_link, telemetry),
 	})
 }
 
@@ -190,10 +180,8 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		keystore_container,
 		select_chain,
 		transaction_pool,
-		other: (block_import, grandpa_link, beefy_voter_links, beefy_rpc_links, mut telemetry),
+		other: (block_import, grandpa_link, mut telemetry),
 	} = new_partial(&config)?;
-
-	let genesis_hash = client.block_hash(0).ok().flatten().expect("Genesis block exists; qed");
 
 	let mut net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
 
@@ -207,22 +195,6 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 	net_config.add_notification_protocol(sc_consensus_grandpa::grandpa_peers_set_config(
 		grandpa_protocol_name.clone(),
 	));
-
-	let beefy_gossip_proto_name =
-		sc_consensus_beefy::gossip_protocol_name(genesis_hash, config.chain_spec.fork_id());
-	// `beefy_on_demand_justifications_handler` is given to `beefy-gadget` task to be run,
-	// while `beefy_req_resp_cfg` is added to `config.network.request_response_protocols`.
-	let (beefy_on_demand_justifications_handler, beefy_req_resp_cfg) =
-		sc_consensus_beefy::communication::request_response::BeefyJustifsRequestHandler::new(
-			genesis_hash,
-			config.chain_spec.fork_id(),
-			client.clone(),
-			config.prometheus_registry().cloned(),
-		);
-	net_config.add_notification_protocol(
-		sc_consensus_beefy::communication::beefy_peers_set_config(beefy_gossip_proto_name.clone()),
-	);
-	net_config.add_request_response_protocol(beefy_req_resp_cfg);
 
 	let role = config.role.clone();
 	let warp_sync = Arc::new(sc_consensus_grandpa::warp_proof::NetworkProvider::new(
@@ -276,9 +248,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 	let rpc_extensions_builder = {
 		use sc_consensus_grandpa::FinalityProofProvider as GrandpaFinalityProofProvider;
 
-		use mmr_rpc::{Mmr, MmrApiServer};
 		use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
-		use sc_consensus_beefy_rpc::{Beefy, BeefyApiServer};
 		use sc_consensus_grandpa_rpc::{Grandpa, GrandpaApiServer};
 		use sc_rpc::DenyUnsafe;
 		use substrate_frame_rpc_system::{System, SystemApiServer};
@@ -313,26 +283,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 				.into_rpc(),
 			)
 			.map_err(map_err)?;
-			io.merge(
-				Beefy::<Block>::new(
-					beefy_rpc_links.from_voter_justif_stream.clone(),
-					beefy_rpc_links.from_voter_best_beefy_stream.clone(),
-					subscription_executor,
-				)
-				.map_err(|e| sc_service::Error::Other(format!("{e}")))?
-				.into_rpc(),
-			)
-			.map_err(map_err)?;
-			io.merge(
-				Mmr::new(
-					client.clone(),
-					backend
-						.offchain_storage()
-						.ok_or("Backend doesn't provide the required offchain storage")?,
-				)
-				.into_rpc(),
-			)
-			.map_err(map_err)?;
+
 			Ok(io)
 		})
 	};
@@ -403,34 +354,6 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 	// if the node isn't actively participating in consensus then it doesn't
 	// need a keystore, regardless of which protocol we use below.
 	let keystore = if role.is_authority() { Some(keystore_container.keystore()) } else { None };
-
-	let justifications_protocol_name = beefy_on_demand_justifications_handler.protocol_name();
-	let payload_provider = sp_consensus_beefy::mmr::MmrRootProvider::new(client.clone());
-	let beefy_params = sc_consensus_beefy::BeefyParams {
-		client: client.clone(),
-		backend,
-		payload_provider,
-		runtime: client,
-		key_store: keystore.clone(),
-		network_params: sc_consensus_beefy::BeefyNetworkParams {
-			network: network.clone(),
-			sync: sync_service.clone(),
-			gossip_protocol_name: beefy_gossip_proto_name,
-			justifications_protocol_name,
-			_phantom: core::marker::PhantomData::<Block>,
-		},
-		min_block_delta: 2,
-		prometheus_registry: prometheus_registry.clone(),
-		links: beefy_voter_links,
-		on_demand_justifications_handler: beefy_on_demand_justifications_handler,
-	};
-
-	// Start the BEEFY bridge gadget.
-	task_manager.spawn_essential_handle().spawn_blocking(
-		"beefy-gadget",
-		None,
-		sc_consensus_beefy::start_beefy_gadget::<_, _, _, _, _, _, _>(beefy_params),
-	);
 
 	let grandpa_config = sc_consensus_grandpa::Config {
 		// FIXME #1578 make this available through chainspec

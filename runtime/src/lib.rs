@@ -11,7 +11,6 @@ pub mod rialto_messages;
 pub mod weights;
 pub mod xcm_config;
 
-use bp_evochain::BlakeTwoAndKeccak256;
 use bp_parachains::SingleParaStoredHeaderDataBuilder;
 use bp_runtime::HeaderId;
 use pallet_grandpa::{
@@ -19,11 +18,10 @@ use pallet_grandpa::{
 };
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_consensus_beefy::{crypto::AuthorityId as BeefyId, mmr::MmrLeafVersion, ValidatorSet};
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{Block as BlockT, Keccak256, NumberFor, One, OpaqueKeys},
+	traits::{Block as BlockT, NumberFor, One, OpaqueKeys},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
@@ -98,7 +96,6 @@ pub type Hash = bp_evochain::Hash;
 impl_opaque_keys! {
 	pub struct SessionKeys {
 		pub aura: Aura,
-		pub beefy: Beefy,
 		pub grandpa: Grandpa,
 	}
 }
@@ -171,7 +168,7 @@ impl frame_system::Config for Runtime {
 	/// The type for hashing blocks and tries.
 	type Hash = Hash;
 	/// The hashing algorithm used.
-	type Hashing = BlakeTwoAndKeccak256;
+	type Hashing = bp_evochain::Hasher;
 	/// The nonce type.
 	type Nonce = Nonce;
 	/// The ubiquitous event type.
@@ -210,16 +207,6 @@ impl pallet_aura::Config for Runtime {
 	type AllowMultipleBlocksPerSlot = ConstBool<false>;
 }
 
-impl pallet_beefy::Config for Runtime {
-	type BeefyId = BeefyId;
-	type MaxAuthorities = ConstU32<10>;
-	type MaxSetIdSessionEntries = ConstU64<0>;
-	type OnNewValidatorSet = MmrLeaf;
-	type WeightInfo = ();
-	type KeyOwnerProof = sp_core::Void;
-	type EquivocationReportSystem = ();
-}
-
 impl pallet_grandpa::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 
@@ -229,54 +216,6 @@ impl pallet_grandpa::Config for Runtime {
 
 	type KeyOwnerProof = sp_core::Void;
 	type EquivocationReportSystem = ();
-}
-
-/// MMR helper types.
-mod mmr {
-	use super::Runtime;
-	pub use pallet_mmr::primitives::*;
-
-	pub type Leaf = <<Runtime as pallet_mmr::Config>::LeafData as LeafDataProvider>::LeafData;
-	pub type Hashing = <Runtime as pallet_mmr::Config>::Hashing;
-	pub type Hash = <Hashing as sp_runtime::traits::Hash>::Output;
-}
-
-impl pallet_mmr::Config for Runtime {
-	const INDEXING_PREFIX: &'static [u8] = b"mmr";
-	type Hashing = Keccak256;
-	type OnNewRoot = pallet_beefy_mmr::DepositBeefyDigest<Runtime>;
-	type WeightInfo = ();
-	type LeafData = pallet_beefy_mmr::Pallet<Runtime>;
-}
-
-parameter_types! {
-	/// Version of the produced MMR leaf.
-	///
-	/// The version consists of two parts;
-	/// - `major` (3 bits)
-	/// - `minor` (5 bits)
-	///
-	/// `major` should be updated only if decoding the previous MMR Leaf format from the payload
-	/// is not possible (i.e. backward incompatible change).
-	/// `minor` should be updated if fields are added to the previous MMR Leaf, which given SCALE
-	/// encoding does not prevent old leafs from being decoded.
-	///
-	/// Hence we expect `major` to be changed really rarely (think never).
-	/// See [`MmrLeafVersion`] type documentation for more details.
-	pub LeafVersion: MmrLeafVersion = MmrLeafVersion::new(0, 0);
-}
-
-pub struct BeefyDummyDataProvider;
-
-impl sp_consensus_beefy::mmr::BeefyDataProvider<()> for BeefyDummyDataProvider {
-	fn extra_data() {}
-}
-
-impl pallet_beefy_mmr::Config for Runtime {
-	type LeafVersion = LeafVersion;
-	type BeefyAuthorityToMerkleLeaf = pallet_beefy_mmr::BeefyEcdsaToEthereum;
-	type LeafExtra = ();
-	type BeefyDataProvider = BeefyDummyDataProvider;
 }
 
 impl pallet_timestamp::Config for Runtime {
@@ -506,11 +445,6 @@ construct_runtime!(
 		Grandpa: pallet_grandpa,
 		ShifSessionManager: pallet_shift_session_manager,
 
-		// BEEFY Bridges support.
-		Beefy: pallet_beefy,
-		Mmr: pallet_mmr,
-		MmrLeaf: pallet_beefy_mmr,
-
 		// Rialto Bridges support.
 		BridgeRelayers: pallet_bridge_relayers,
 		BridgeRialtoGrandpa: pallet_bridge_grandpa,
@@ -689,79 +623,6 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl sp_consensus_beefy::BeefyApi<Block> for Runtime {
-		fn beefy_genesis() -> Option<BlockNumber> {
-			Beefy::genesis_block()
-		}
-
-		fn validator_set() -> Option<ValidatorSet<BeefyId>> {
-			Beefy::validator_set()
-		}
-
-		fn submit_report_equivocation_unsigned_extrinsic(
-			_equivocation_proof: sp_consensus_beefy::EquivocationProof<
-				NumberFor<Block>,
-				sp_consensus_beefy::crypto::AuthorityId,
-				sp_consensus_beefy::crypto::Signature
-			>,
-			_key_owner_proof: sp_consensus_beefy::OpaqueKeyOwnershipProof,
-		) -> Option<()> { None }
-
-		fn generate_key_ownership_proof(
-			_set_id: sp_consensus_beefy::ValidatorSetId,
-			_authority_id: sp_consensus_beefy::crypto::AuthorityId,
-		) -> Option<sp_consensus_beefy::OpaqueKeyOwnershipProof> { None }
-	}
-
-	impl pallet_mmr::primitives::MmrApi<
-		Block,
-		mmr::Hash,
-		BlockNumber,
-	> for Runtime {
-		fn mmr_root() -> Result<mmr::Hash, mmr::Error> {
-			Ok(Mmr::mmr_root())
-		}
-
-		fn mmr_leaf_count() -> Result<mmr::LeafIndex, mmr::Error> {
-			Ok(Mmr::mmr_leaves())
-		}
-
-		fn generate_proof(
-			block_numbers: Vec<BlockNumber>,
-			best_known_block_number: Option<BlockNumber>,
-		) -> Result<(Vec<mmr::EncodableOpaqueLeaf>, mmr::Proof<mmr::Hash>), mmr::Error> {
-			Mmr::generate_proof(block_numbers, best_known_block_number).map(
-				|(leaves, proof)| {
-					(
-						leaves
-							.into_iter()
-							.map(|leaf| mmr::EncodableOpaqueLeaf::from_leaf(&leaf))
-							.collect(),
-						proof,
-					)
-				},
-			)
-		}
-
-		fn verify_proof(leaves: Vec<mmr::EncodableOpaqueLeaf>, proof: mmr::Proof<mmr::Hash>)
-			-> Result<(), mmr::Error>
-		{
-			let leaves = leaves.into_iter().map(|leaf|
-				leaf.into_opaque_leaf()
-				.try_decode()
-				.ok_or(mmr::Error::Verify)).collect::<Result<Vec<mmr::Leaf>, mmr::Error>>()?;
-			Mmr::verify_leaves(leaves, proof)
-		}
-
-		fn verify_proof_stateless(
-			root: mmr::Hash,
-			leaves: Vec<mmr::EncodableOpaqueLeaf>,
-			proof: mmr::Proof<mmr::Hash>
-		) -> Result<(), mmr::Error> {
-			let nodes = leaves.into_iter().map(|leaf|mmr::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
-			pallet_mmr::verify_leaves_proof::<mmr::Hashing, _>(root, nodes, proof)
-		}
-	}
 
 	impl fg_primitives::GrandpaApi<Block> for Runtime {
 		fn current_set_id() -> fg_primitives::SetId {

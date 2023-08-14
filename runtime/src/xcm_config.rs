@@ -25,54 +25,18 @@ use bp_evochain::WeightToFee;
 use bridge_runtime_common::CustomNetworkId;
 use frame_support::{
 	parameter_types,
-	traits::{ConstU32, Everything, Get, Nothing, OriginTrait},
+	traits::{ConstU32, Everything, Nothing, },
 	weights::Weight,
 };
 
 use frame_system::EnsureRoot;
 use xcm::latest::prelude::*;
 use xcm_builder::{
-	AccountKey20Aliases, CurrencyAdapter as XcmCurrencyAdapter, IsConcrete, MintLocation,
-	SignedAccountKey20AsNative, SovereignSignedViaLocation, TakeWeightCredit, UsingComponents,
+	AccountId32Aliases, CurrencyAdapter as XcmCurrencyAdapter, IsConcrete, MintLocation,
+	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
+	UsingComponents,
 };
 use xcm_executor::traits::ExportXcm;
-
-/// Instructs how to convert a 20 byte accountId into a MultiLocation
-pub struct AccountIdToMultiLocation<AccountId>(sp_std::marker::PhantomData<AccountId>);
-impl<AccountId> sp_runtime::traits::Convert<AccountId, MultiLocation>
-	for AccountIdToMultiLocation<AccountId>
-where
-	AccountId: Into<[u8; 20]>,
-{
-	fn convert(account: AccountId) -> MultiLocation {
-		MultiLocation {
-			parents: 0,
-			interior: X1(AccountKey20 { network: None, key: account.into() }),
-		}
-	}
-}
-
-// Convert a local Origin (i.e., a signed 20 byte account Origin)  to a Multilocation
-pub struct SignedToAccountId20<Origin, AccountId, Network>(
-	sp_std::marker::PhantomData<(Origin, AccountId, Network)>,
-);
-impl<Origin: OriginTrait + Clone, AccountId: Into<[u8; 20]>, Network: Get<NetworkId>>
-	sp_runtime::traits::TryConvert<Origin, MultiLocation>
-	for SignedToAccountId20<Origin, AccountId, Network>
-where
-	Origin::PalletsOrigin: From<frame_system::RawOrigin<AccountId>>
-		+ TryInto<frame_system::RawOrigin<AccountId>, Error = Origin::PalletsOrigin>,
-{
-	fn try_convert(o: Origin) -> Result<MultiLocation, Origin> {
-		o.try_with_caller(|caller| match caller.try_into() {
-			Ok(frame_system::RawOrigin::Signed(who)) => {
-				Ok(AccountKey20 { key: who.into(), network: Some(Network::get()) }.into())
-			},
-			Ok(other) => Err(other.into()),
-			Err(other) => Err(other),
-		})
-	}
-}
 
 parameter_types! {
 	/// The location of the `MLAU` token, from the context of this chain. Since this token is native to this
@@ -99,8 +63,8 @@ parameter_types! {
 /// The canonical means of converting a `MultiLocation` into an `AccountId`, used when we want to
 /// determine the sovereign account controlled by a location.
 pub type SovereignAccountOf = (
-	// We can directly alias an `AccountId20` into a local account.
-	AccountKey20Aliases<ThisNetwork, AccountId>,
+	// We can directly alias an `AccountId32` into a local account.
+	AccountId32Aliases<ThisNetwork, AccountId>,
 );
 
 /// Our asset transactor. This is what allows us to interest with the runtime facilities from the
@@ -125,7 +89,7 @@ type LocalOriginConverter = (
 	// A `Signed` origin of the sovereign account that the original location controls.
 	SovereignSignedViaLocation<SovereignAccountOf, RuntimeOrigin>,
 	// The AccountId20 location type can be expressed natively as a `Signed` origin.
-	SignedAccountKey20AsNative<ThisNetwork, RuntimeOrigin>,
+	SignedAccountId32AsNative<ThisNetwork, RuntimeOrigin>,
 );
 
 parameter_types! {
@@ -186,7 +150,10 @@ impl xcm_executor::Config for XcmConfig {
 
 /// Type to convert an `Origin` type value into a `MultiLocation` value which represents an interior
 /// location of this chain.
-pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, ThisNetwork>;
+pub type LocalOriginToLocation = (
+	// Usual Signed origin to be used in XCM as a corresponding AccountId32
+	SignedToAccountId32<RuntimeOrigin, AccountId, ThisNetwork>,
+);
 
 #[cfg(feature = "runtime-benchmarks")]
 parameter_types! {
