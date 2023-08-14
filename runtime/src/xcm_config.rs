@@ -25,7 +25,7 @@ use bp_evochain::WeightToFee;
 use bridge_runtime_common::CustomNetworkId;
 use frame_support::{
 	parameter_types,
-	traits::{ConstU32, Everything, Nothing, },
+	traits::{ConstU32, Everything, Nothing},
 	weights::Weight,
 };
 
