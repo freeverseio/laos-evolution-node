@@ -4890,8 +4890,6 @@ dependencies = [
  "pallet-bridge-parachains",
  "pallet-bridge-relayers",
  "pallet-grandpa",
- "pallet-session",
- "pallet-shift-session-manager",
  "pallet-sudo",
  "pallet-template",
  "pallet-timestamp",
@@ -5345,20 +5343,6 @@ dependencies = [
  "sp-staking",
  "sp-std",
  "sp-trie",
-]
-
-[[package]]
-name = "pallet-shift-session-manager"
-version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#3e4d79b34f7d3dd562237f6a210650020ab9a999"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-session",
- "parity-scale-codec",
- "scale-info",
- "sp-staking",
- "sp-std",
 ]
 
 [[package]]

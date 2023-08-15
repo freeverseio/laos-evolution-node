@@ -33,8 +33,6 @@ fn endowed_accounts() -> Vec<AccountId> {
 	});
 
 	vec![
-		// Sudo account
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
 		// Regular (unused) accounts
 		get_account_id_from_seed::<sr25519::Public>("Ferdie"),
 		get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),

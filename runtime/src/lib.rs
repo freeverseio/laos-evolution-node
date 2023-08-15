@@ -266,26 +266,6 @@ impl pallet_sudo::Config for Runtime {
 	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
-parameter_types! {
-	/// Authorities are changing every 5 minutes.
-	pub const Period: BlockNumber = bp_evochain::SESSION_LENGTH;
-	pub const Offset: BlockNumber = 0;
-	pub const RelayerStakeReserveId: [u8; 8] = *b"brdgrlrs";
-}
-
-impl pallet_session::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type ValidatorId = <Self as frame_system::Config>::AccountId;
-	type ValidatorIdOf = ();
-	type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
-	type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
-	type SessionManager = pallet_shift_session_manager::Pallet<Runtime>;
-	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
-	type Keys = SessionKeys;
-	// TODO: update me (https://github.com/paritytech/parity-bridges-common/issues/78)
-	type WeightInfo = ();
-}
-
 impl pallet_bridge_relayers::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Reward = Balance;
@@ -295,7 +275,7 @@ impl pallet_bridge_relayers::Config for Runtime {
 		AccountId,
 		BlockNumber,
 		Balances,
-		RelayerStakeReserveId,
+		(),
 		ConstU64<1_000>,
 		ConstU64<8>,
 	>;
@@ -319,8 +299,6 @@ parameter_types! {
 
 /// Instance of the messages pallet used to relay messages to/from Rialto chain.
 pub type WithRialtoMessagesInstance = ();
-
-impl pallet_shift_session_manager::Config for Runtime {}
 
 impl pallet_bridge_messages::Config<WithRialtoMessagesInstance> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -441,9 +419,7 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 
 		// Consensus support.
-		Session: pallet_session,
 		Grandpa: pallet_grandpa,
-		ShifSessionManager: pallet_shift_session_manager,
 
 		// Rialto Bridges support.
 		BridgeRelayers: pallet_bridge_relayers,

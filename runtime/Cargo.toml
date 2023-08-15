@@ -20,7 +20,6 @@ pallet-aura = { default-features = false, git = "https://github.com/paritytech/s
 pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 frame-support = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 pallet-grandpa = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
-pallet-session = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 pallet-sudo = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 pallet-utility = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 frame-system = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
@@ -78,7 +77,6 @@ pallet-bridge-grandpa = { git = "https://github.com/freeverseio/parity-bridges-c
 pallet-bridge-messages = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
 pallet-bridge-parachains = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
 pallet-bridge-relayers = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
-pallet-shift-session-manager = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
 pallet-xcm-bridge-hub-router = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
 
 [build-dependencies]
@@ -143,7 +141,6 @@ std = [
 	"pallet-bridge-messages/std",
 	"pallet-bridge-parachains/std",
 	"pallet-bridge-relayers/std",
-	"pallet-shift-session-manager/std",
 	"pallet-xcm-bridge-hub-router/std",
 	# Polkadot
 	"pallet-xcm/std",
@@ -151,7 +148,6 @@ std = [
 	"xcm/std",
 	"xcm-executor/std",
 	# Consensus
-	"pallet-session/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
@@ -191,8 +187,6 @@ try-runtime = [
 	"pallet-bridge-messages/try-runtime",
 	"pallet-bridge-parachains/try-runtime",
 	"pallet-bridge-relayers/try-runtime",
-	"pallet-session/try-runtime",
-	"pallet-shift-session-manager/try-runtime",
 	"pallet-utility/try-runtime",
 	"pallet-xcm/try-runtime",
 	"pallet-xcm-bridge-hub-router/try-runtime",
