@@ -6,13 +6,11 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-pub mod ownership_parachain_messages;
-pub mod rialto_messages;
+// pub mod ownership_parachain_messages;
+// pub mod rialto_messages;
 pub mod weights;
-pub mod xcm_config;
+// pub mod xcm_config;
 
-use bp_parachains::SingleParaStoredHeaderDataBuilder;
-use bp_runtime::HeaderId;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -48,20 +46,8 @@ pub use frame_support::{
 
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
-pub use pallet_bridge_grandpa::Call as BridgeGrandpaCall;
-pub use pallet_bridge_messages::Call as MessagesCall;
-pub use pallet_bridge_parachains::Call as BridgeParachainsCall;
 pub use pallet_sudo::Call as SudoCall;
 pub use pallet_timestamp::Call as TimestampCall;
-pub use pallet_xcm::Call as XcmCall;
-
-use bridge_runtime_common::{
-	generate_bridge_reject_obsolete_headers_and_messages,
-	refund_relayer_extension::{
-		ActualFeeRefund, RefundBridgedParachainMessages, RefundableMessagesLane,
-		RefundableParachain,
-	},
-};
 
 use pallet_transaction_payment::{ConstFeeMultiplier, CurrencyAdapter, Multiplier};
 #[cfg(any(feature = "std", test))]
@@ -266,131 +252,6 @@ impl pallet_sudo::Config for Runtime {
 	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
-impl pallet_bridge_relayers::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Reward = Balance;
-	type PaymentProcedure =
-		bp_relayers::PayRewardFromAccount<pallet_balances::Pallet<Runtime>, AccountId>;
-	type StakeAndSlash = pallet_bridge_relayers::StakeAndSlashNamed<
-		AccountId,
-		BlockNumber,
-		Balances,
-		(),
-		ConstU64<1_000>,
-		ConstU64<8>,
-	>;
-	type WeightInfo = ();
-}
-
-pub type RialtoGrandpaInstance = ();
-
-impl pallet_bridge_grandpa::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type BridgedChain = bp_rialto::Rialto;
-	type MaxFreeMandatoryHeadersPerBlock = ConstU32<4>;
-	type HeadersToKeep = ConstU32<{ bp_rialto::DAYS }>;
-	type WeightInfo = pallet_bridge_grandpa::weights::BridgeWeight<Runtime>;
-}
-
-parameter_types! {
-	pub const MaxMessagesToPruneAtOnce: bp_messages::MessageNonce = 8;
-	pub const RootAccountForPayments: Option<AccountId> = None;
-}
-
-/// Instance of the messages pallet used to relay messages to/from Rialto chain.
-pub type WithRialtoMessagesInstance = ();
-
-impl pallet_bridge_messages::Config<WithRialtoMessagesInstance> for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = weights::RialtoMessagesWeightInfo<Runtime>;
-
-	type ThisChain = bp_evochain::Evochain;
-	type BridgedChain = bp_rialto::Rialto;
-	type BridgedHeaderChain = BridgeRialtoGrandpa;
-
-	type OutboundPayload = bridge_runtime_common::messages_xcm_extension::XcmAsPlainPayload;
-	type InboundPayload = bridge_runtime_common::messages_xcm_extension::XcmAsPlainPayload;
-
-	type DeliveryPayments = ();
-	type DeliveryConfirmationPayments = pallet_bridge_relayers::DeliveryConfirmationPaymentsAdapter<
-		Runtime,
-		WithRialtoMessagesInstance,
-		frame_support::traits::ConstU64<100_000>,
-	>;
-
-	type MessageDispatch = crate::rialto_messages::FromRialtoMessageDispatch;
-}
-
-/// Instance of messages pallet used to relay messages to/from Ownership parachain
-pub type WithOwnershipParachainMessagesInstance = pallet_bridge_messages::Instance1;
-
-impl pallet_bridge_messages::Config<WithOwnershipParachainMessagesInstance> for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = weights::OwnershipParachainMessagesWeightInfo<Runtime>;
-
-	type ThisChain = bp_evochain::Evochain;
-	type BridgedChain = bp_ownership_parachain::OwnershipParachain;
-	type BridgedHeaderChain = pallet_bridge_parachains::ParachainHeaders<
-		Runtime,
-		WithRialtoParachainsInstance,
-		bp_ownership_parachain::OwnershipParachain,
-	>;
-
-	type OutboundPayload = bridge_runtime_common::messages_xcm_extension::XcmAsPlainPayload;
-	type InboundPayload = bridge_runtime_common::messages_xcm_extension::XcmAsPlainPayload;
-
-	type DeliveryPayments = ();
-	type DeliveryConfirmationPayments = pallet_bridge_relayers::DeliveryConfirmationPaymentsAdapter<
-		Runtime,
-		WithOwnershipParachainMessagesInstance,
-		frame_support::traits::ConstU64<100_000>,
-	>;
-
-	type MessageDispatch =
-		crate::ownership_parachain_messages::FromOwnershipParachainMessageDispatch;
-}
-
-/// Instance of the with-Ownership parachains pallet.
-pub type WithOwnershipParachainsInstance = ();
-
-parameter_types! {
-	pub const RialtoParasPalletName: &'static str = bp_rialto::PARAS_PALLET_NAME;
-	pub const WestendParasPalletName: &'static str = bp_westend::PARAS_PALLET_NAME;
-	pub const MaxRialtoParaHeadDataSize: u32 = bp_rialto::MAX_NESTED_PARACHAIN_HEAD_DATA_SIZE;
-	pub const MaxWestendParaHeadDataSize: u32 = bp_westend::MAX_NESTED_PARACHAIN_HEAD_DATA_SIZE;
-}
-
-/// Instance of the with-Rialto parachains pallet.
-pub type WithRialtoParachainsInstance = ();
-
-impl pallet_bridge_parachains::Config<WithRialtoParachainsInstance> for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = pallet_bridge_parachains::weights::BridgeWeight<Runtime>;
-	type BridgesGrandpaPalletInstance = RialtoGrandpaInstance;
-	type ParasPalletName = RialtoParasPalletName;
-	type ParaStoredHeaderDataBuilder =
-		SingleParaStoredHeaderDataBuilder<bp_ownership_parachain::OwnershipParachain>;
-	type HeadsToKeep = ConstU32<1024>;
-	type MaxParaHeadDataSize = MaxRialtoParaHeadDataSize;
-}
-
-// this config is totally incorrect - the pallet is not actually used at this runtime. We need
-// it only to be able to run benchmarks and make required traits (and default weights for tests).
-impl pallet_xcm_bridge_hub_router::Config for Runtime {
-	type WeightInfo = ();
-
-	type UniversalLocation = xcm_config::UniversalLocation;
-	type SiblingBridgeHubLocation = xcm_config::TokenLocation;
-	type BridgedNetworkId = xcm_config::RialtoNetwork;
-
-	type ToBridgeHubSender = xcm_config::XcmRouter;
-	type WithBridgeHubChannel = xcm_config::EmulatedSiblingXcmpChannel;
-
-	type BaseFee = ConstU128<1_000_000_000>;
-	type ByteFee = ConstU128<1_000>;
-	type FeeAsset = xcm_config::TokenAssetId;
-}
-
 impl pallet_utility::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
@@ -421,46 +282,13 @@ construct_runtime!(
 		// Consensus support.
 		Grandpa: pallet_grandpa,
 
-		// Rialto Bridges support.
-		BridgeRelayers: pallet_bridge_relayers,
-		BridgeRialtoGrandpa: pallet_bridge_grandpa,
-		BridgeRialtoMessages: pallet_bridge_messages,
-
-		// Ownership parachain bridge modules.
-		BridgeRialtoParachains: pallet_bridge_parachains,
-		BridgeOwnershipParachainMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>},
-
-		// XCM
-		XcmPallet: pallet_xcm,
-		XcmBridgeHubRouter: pallet_xcm_bridge_hub_router,
+		// // XCM
+		// XcmPallet: pallet_xcm,
 
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
 	}
 );
-
-generate_bridge_reject_obsolete_headers_and_messages! {
-	RuntimeCall, AccountId,
-	// Grandpa
-	BridgeRialtoGrandpa,
-	// Parachains
-	BridgeRialtoParachains,
-	//Messages
-	BridgeRialtoMessages, BridgeOwnershipParachainMessages
-}
-
-bp_runtime::generate_static_str_provider!(BridgeRefundRialtoPara2000Lane0Msgs);
-
-/// Signed extension that refunds relayers that are delivering messages from the Rialto parachain.
-pub type PriorityBoostPerMessage = ConstU64<351_343_108>;
-pub type BridgeRefundOwnershipParachainMessages = RefundBridgedParachainMessages<
-	Runtime,
-	RefundableParachain<WithRialtoParachainsInstance, bp_ownership_parachain::OwnershipParachain>,
-	RefundableMessagesLane<Runtime, WithOwnershipParachainMessagesInstance>,
-	ActualFeeRefund<Runtime>,
-	PriorityBoostPerMessage,
-	StrBridgeRefundRialtoPara2000Lane0Msgs,
->;
 
 /// The address format for describing accounts.
 pub type Address = AccountId;
@@ -478,8 +306,6 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-	BridgeRejectObsoleteHeadersAndMessages,
-	BridgeRefundOwnershipParachainMessages,
 );
 
 /// Unchecked extrinsic type as expected by this runtime.
@@ -632,76 +458,6 @@ impl_runtime_apis! {
 			// defined our key owner proof type as a bottom type (i.e. a type
 			// with no values).
 			None
-		}
-	}
-
-	impl bp_rialto::RialtoFinalityApi<Block> for Runtime {
-		fn best_finalized() -> Option<HeaderId<bp_rialto::Hash, bp_rialto::BlockNumber>> {
-			BridgeRialtoGrandpa::best_finalized()
-		}
-
-		fn accepted_grandpa_finality_proofs(
-		) -> Vec<bp_header_chain::justification::GrandpaJustification<bp_rialto::Header>> {
-			BridgeRialtoGrandpa::accepted_finality_proofs()
-		}
-	}
-
-	impl bp_ownership_parachain::OwnershipParachainFinalityApi<Block> for Runtime {
-		fn best_finalized() -> Option<HeaderId<bp_rialto::Hash, bp_rialto::BlockNumber>> {
-			pallet_bridge_parachains::Pallet::<
-				Runtime,
-				WithRialtoParachainsInstance,
-			>::best_parachain_head_id::<bp_ownership_parachain::OwnershipParachain>().unwrap_or(None)
-		}
-	}
-
-	impl bp_rialto::ToRialtoOutboundLaneApi<Block> for Runtime {
-		fn message_details(
-			lane: bp_messages::LaneId,
-			begin: bp_messages::MessageNonce,
-			end: bp_messages::MessageNonce,
-		) -> Vec<bp_messages::OutboundMessageDetails> {
-			bridge_runtime_common::messages_api::outbound_message_details::<
-				Runtime,
-				WithRialtoMessagesInstance,
-			>(lane, begin, end)
-		}
-	}
-
-	impl bp_rialto::FromRialtoInboundLaneApi<Block> for Runtime {
-		fn message_details(
-			lane: bp_messages::LaneId,
-			messages: Vec<(bp_messages::MessagePayload, bp_messages::OutboundMessageDetails)>,
-		) -> Vec<bp_messages::InboundMessageDetails> {
-			bridge_runtime_common::messages_api::inbound_message_details::<
-				Runtime,
-				WithRialtoMessagesInstance,
-			>(lane, messages)
-		}
-	}
-
-	impl bp_ownership_parachain::ToOwnershipParachainOutboundLaneApi<Block> for Runtime {
-		fn message_details(
-			lane: bp_messages::LaneId,
-			begin: bp_messages::MessageNonce,
-			end: bp_messages::MessageNonce,
-		) -> Vec<bp_messages::OutboundMessageDetails> {
-			bridge_runtime_common::messages_api::outbound_message_details::<
-				Runtime,
-				WithOwnershipParachainMessagesInstance,
-			>(lane, begin, end)
-		}
-	}
-
-	impl bp_ownership_parachain::FromOwnershipParachainInboundLaneApi<Block> for Runtime {
-		fn message_details(
-			lane: bp_messages::LaneId,
-			messages: Vec<(bp_messages::MessagePayload, bp_messages::OutboundMessageDetails)>,
-		) -> Vec<bp_messages::InboundMessageDetails> {
-			bridge_runtime_common::messages_api::inbound_message_details::<
-				Runtime,
-				WithOwnershipParachainMessagesInstance,
-			>(lane, messages)
 		}
 	}
 

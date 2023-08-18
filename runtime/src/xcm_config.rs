@@ -17,9 +17,8 @@
 //! XCM configurations for the Evochain runtime.
 
 use super::{
-	ownership_parachain_messages::ToOwnershipParachainBlobExporter,
-	rialto_messages::ToRialtoBlobExporter, AccountId, AllPalletsWithSystem, Balances, Runtime,
-	RuntimeCall, RuntimeEvent, RuntimeOrigin, XcmPallet,
+	AccountId, AllPalletsWithSystem, Balances, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
+	XcmPallet,
 };
 use bp_evochain::WeightToFee;
 use bridge_runtime_common::CustomNetworkId;
