@@ -699,7 +699,7 @@ dependencies = [
 [[package]]
 name = "bp-beefy"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "binary-merkle-tree",
  "bp-runtime",
@@ -717,7 +717,7 @@ dependencies = [
 [[package]]
 name = "bp-bridge-hub-cumulus"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-messages",
  "bp-polkadot-core",
@@ -732,7 +732,7 @@ dependencies = [
 [[package]]
 name = "bp-evochain"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-beefy",
  "bp-header-chain",
@@ -759,7 +759,7 @@ dependencies = [
 [[package]]
 name = "bp-header-chain"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-runtime",
  "finality-grandpa",
@@ -776,7 +776,7 @@ dependencies = [
 [[package]]
 name = "bp-messages"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-header-chain",
  "bp-runtime",
@@ -792,7 +792,7 @@ dependencies = [
 [[package]]
 name = "bp-ownership-parachain"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-bridge-hub-cumulus",
  "bp-messages",
@@ -809,7 +809,7 @@ dependencies = [
 [[package]]
 name = "bp-parachains"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-header-chain",
  "bp-polkadot-core",
@@ -826,7 +826,7 @@ dependencies = [
 [[package]]
 name = "bp-polkadot-core"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-messages",
  "bp-runtime",
@@ -844,7 +844,7 @@ dependencies = [
 [[package]]
 name = "bp-relayers"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-messages",
  "bp-runtime",
@@ -858,7 +858,7 @@ dependencies = [
 [[package]]
 name = "bp-rialto"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-header-chain",
  "bp-messages",
@@ -874,7 +874,7 @@ dependencies = [
 [[package]]
 name = "bp-runtime"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -896,7 +896,7 @@ dependencies = [
 [[package]]
 name = "bp-test-utils"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-header-chain",
  "bp-parachains",
@@ -916,7 +916,7 @@ dependencies = [
 [[package]]
 name = "bp-westend"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-header-chain",
  "bp-polkadot-core",
@@ -928,12 +928,12 @@ dependencies = [
 [[package]]
 name = "bp-xcm-bridge-hub-router"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 
 [[package]]
 name = "bridge-runtime-common"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-header-chain",
  "bp-messages",
@@ -1070,9 +1070,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.0.82"
+version = "1.0.83"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "305fe645edc1442a0fa8b6726ba61d422798d37a52e12eaecf4b022ebbb88f01"
+checksum = "f1174fb0b6ec23863f8b971027804a42614e347eafb0a95bf0b12cdae21fc4d0"
 dependencies = [
  "jobserver",
  "libc",
@@ -1222,9 +1222,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.3.22"
+version = "4.3.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b417ae4361bca3f5de378294fc7472d3c4ed86a5ef9f49e93ae722f432aae8d2"
+checksum = "03aef18ddf7d879c15ce20f04826ef8418101c7e528014c3eeea13321047dca3"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -1233,9 +1233,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.3.22"
+version = "4.3.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c90dc0f0e42c64bff177ca9d7be6fcc9ddb0f26a6e062174a61c84dd6c644d4"
+checksum = "f8ce6fffb678c9b80a70b6b6de0aad31df727623a70fd9a842c30cd573e2fa98"
 dependencies = [
  "anstream",
  "anstyle",
@@ -1698,9 +1698,9 @@ dependencies = [
 
 [[package]]
 name = "cxx"
-version = "1.0.105"
+version = "1.0.106"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "666a3ec767f4bbaf0dcfcc3b4ea048b90520b254fdf88813e763f4c762636c14"
+checksum = "28403c86fc49e3401fdf45499ba37fad6493d9329449d6449d7f0e10f4654d28"
 dependencies = [
  "cc",
  "cxxbridge-flags",
@@ -1710,9 +1710,9 @@ dependencies = [
 
 [[package]]
 name = "cxx-build"
-version = "1.0.105"
+version = "1.0.106"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "162bec16c4cc28b19e26db0197b60ba5480fdb9a4cbf0f4c6c104a937741b78e"
+checksum = "78da94fef01786dc3e0c76eafcd187abcaa9972c78e05ff4041e24fdf059c285"
 dependencies = [
  "cc",
  "codespan-reporting",
@@ -1725,15 +1725,15 @@ dependencies = [
 
 [[package]]
 name = "cxxbridge-flags"
-version = "1.0.105"
+version = "1.0.106"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6e8c238aadc4b9f2c00269d04c87abb23f96dd240803872536eed1a304bb40e"
+checksum = "e2a6f5e1dfb4b34292ad4ea1facbfdaa1824705b231610087b00b17008641809"
 
 [[package]]
 name = "cxxbridge-macro"
-version = "1.0.105"
+version = "1.0.106"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59d9ffb4193dd22180b8d5747b1e095c3d9c9c665ce39b0483a488948f437e06"
+checksum = "50c49547d73ba8dcfd4ad7325d64c6d5391ff4224d498fc39a6f3f49825a530d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1852,9 +1852,9 @@ dependencies = [
 
 [[package]]
 name = "deranged"
-version = "0.3.7"
+version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7684a49fb1af197853ef7b2ee694bc1f5b4179556f1e5710e1760c5db6f5e929"
+checksum = "f2696e8a945f658fd14dc3b87242e6b80cd0f36ff04ea560fa39082368847946"
 
 [[package]]
 name = "derivative"
@@ -5201,7 +5201,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-grandpa"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-header-chain",
  "bp-runtime",
@@ -5222,7 +5222,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-messages"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-header-chain",
  "bp-messages",
@@ -5243,7 +5243,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-parachains"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-header-chain",
  "bp-parachains",
@@ -5264,7 +5264,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-relayers"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-messages",
  "bp-relayers",
@@ -5473,7 +5473,7 @@ dependencies = [
 [[package]]
 name = "pallet-xcm-bridge-hub-router"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#9d78cd5c018676b7da6349f8f113fffd8c0585ab"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#58717c36d662b2bfe18b91fe4703556fb30d4a90"
 dependencies = [
  "bp-xcm-bridge-hub-router",
  "frame-benchmarking",
@@ -5627,7 +5627,7 @@ dependencies = [
  "libc",
  "redox_syscall 0.3.5",
  "smallvec",
- "windows-targets 0.48.3",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -5736,12 +5736,12 @@ dependencies = [
 
 [[package]]
 name = "petgraph"
-version = "0.6.3"
+version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4dd7d28ee937e54fe3080c91faa1c3a46c06de6252988a7f4592ba2310ef22a4"
+checksum = "e1d3afd2628e69da2be385eb6f2fd57c8ac7977ceeff6dc166ff1657b0e386a9"
 dependencies = [
  "fixedbitset",
- "indexmap 1.9.3",
+ "indexmap 2.0.0",
 ]
 
 [[package]]
@@ -7893,18 +7893,18 @@ checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 
 [[package]]
 name = "serde"
-version = "1.0.183"
+version = "1.0.185"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32ac8da02677876d532745a130fc9d8e6edfa81a269b107c5b00829b91d8eb3c"
+checksum = "be9b6f69f1dfd54c3b568ffa45c310d6973a5e5148fd40cf515acaf38cf5bc31"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.183"
+version = "1.0.185"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aafe972d60b0b9bee71a91b92fee2d4fb3c9d7e8f6b179aa99f27203d99a4816"
+checksum = "dc59dfdcbad1437773485e0367fea4b090a2e0a16d9ffc46af47764536a298ec"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -9145,9 +9145,9 @@ checksum = "9d0e916b1148c8e263850e1ebcbd046f333e0683c724876bb0da63ea4373dc8a"
 
 [[package]]
 name = "tempfile"
-version = "3.7.1"
+version = "3.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc02fddf48964c42031a0b3fe0428320ecf3a73c401040fc0096f97794310651"
+checksum = "cb94d2f3cc536af71caac6b6fcebf65860b347e7ce0cc9ebe8f70d3e521054ef"
 dependencies = [
  "cfg-if",
  "fastrand 2.0.0",
@@ -10582,7 +10582,7 @@ version = "0.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e686886bc078bc1b0b600cac0147aadb815089b6e4da64016cbd754b6342700f"
 dependencies = [
- "windows-targets 0.48.3",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -10600,7 +10600,7 @@ version = "0.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "677d2418bec65e3338edb076e806bc1ec15693c5d0104683f2efe857f61056a9"
 dependencies = [
- "windows-targets 0.48.3",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -10620,17 +10620,17 @@ dependencies = [
 
 [[package]]
 name = "windows-targets"
-version = "0.48.3"
+version = "0.48.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27f51fb4c64f8b770a823c043c7fad036323e1c48f55287b7bbb7987b2fcdf3b"
+checksum = "9a2fa6e2155d7247be68c096456083145c183cbbbc2764150dda45a87197940c"
 dependencies = [
- "windows_aarch64_gnullvm 0.48.3",
- "windows_aarch64_msvc 0.48.3",
- "windows_i686_gnu 0.48.3",
- "windows_i686_msvc 0.48.3",
- "windows_x86_64_gnu 0.48.3",
- "windows_x86_64_gnullvm 0.48.3",
- "windows_x86_64_msvc 0.48.3",
+ "windows_aarch64_gnullvm 0.48.5",
+ "windows_aarch64_msvc 0.48.5",
+ "windows_i686_gnu 0.48.5",
+ "windows_i686_msvc 0.48.5",
+ "windows_x86_64_gnu 0.48.5",
+ "windows_x86_64_gnullvm 0.48.5",
+ "windows_x86_64_msvc 0.48.5",
 ]
 
 [[package]]
@@ -10641,9 +10641,9 @@ checksum = "597a5118570b68bc08d8d59125332c54f1ba9d9adeedeef5b99b02ba2b0698f8"
 
 [[package]]
 name = "windows_aarch64_gnullvm"
-version = "0.48.3"
+version = "0.48.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fde1bb55ae4ce76a597a8566d82c57432bc69c039449d61572a7a353da28f68c"
+checksum = "2b38e32f0abccf9987a4e3079dfb67dcd799fb61361e53e2882c3cbaf0d905d8"
 
 [[package]]
 name = "windows_aarch64_msvc"
@@ -10659,9 +10659,9 @@ checksum = "e08e8864a60f06ef0d0ff4ba04124db8b0fb3be5776a5cd47641e942e58c4d43"
 
 [[package]]
 name = "windows_aarch64_msvc"
-version = "0.48.3"
+version = "0.48.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1513e8d48365a78adad7322fd6b5e4c4e99d92a69db8df2d435b25b1f1f286d4"
+checksum = "dc35310971f3b2dbbf3f0690a219f40e2d9afcf64f9ab7cc1be722937c26b4bc"
 
 [[package]]
 name = "windows_i686_gnu"
@@ -10677,9 +10677,9 @@ checksum = "c61d927d8da41da96a81f029489353e68739737d3beca43145c8afec9a31a84f"
 
 [[package]]
 name = "windows_i686_gnu"
-version = "0.48.3"
+version = "0.48.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60587c0265d2b842298f5858e1a5d79d146f9ee0c37be5782e92a6eb5e1d7a83"
+checksum = "a75915e7def60c94dcef72200b9a8e58e5091744960da64ec734a6c6e9b3743e"
 
 [[package]]
 name = "windows_i686_msvc"
@@ -10695,9 +10695,9 @@ checksum = "44d840b6ec649f480a41c8d80f9c65108b92d89345dd94027bfe06ac444d1060"
 
 [[package]]
 name = "windows_i686_msvc"
-version = "0.48.3"
+version = "0.48.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "224fe0e0ffff5d2ea6a29f82026c8f43870038a0ffc247aa95a52b47df381ac4"
+checksum = "8f55c233f70c4b27f66c523580f78f1004e8b5a8b659e05a4eb49d4166cca406"
 
 [[package]]
 name = "windows_x86_64_gnu"
@@ -10713,9 +10713,9 @@ checksum = "8de912b8b8feb55c064867cf047dda097f92d51efad5b491dfb98f6bbb70cb36"
 
 [[package]]
 name = "windows_x86_64_gnu"
-version = "0.48.3"
+version = "0.48.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62fc52a0f50a088de499712cbc012df7ebd94e2d6eb948435449d76a6287e7ad"
+checksum = "53d40abd2583d23e4718fddf1ebec84dbff8381c07cae67ff7768bbf19c6718e"
 
 [[package]]
 name = "windows_x86_64_gnullvm"
@@ -10725,9 +10725,9 @@ checksum = "26d41b46a36d453748aedef1486d5c7a85db22e56aff34643984ea85514e94a3"
 
 [[package]]
 name = "windows_x86_64_gnullvm"
-version = "0.48.3"
+version = "0.48.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2093925509d91ea3d69bcd20238f4c2ecdb1a29d3c281d026a09705d0dd35f3d"
+checksum = "0b7b52767868a23d5bab768e390dc5f5c55825b6d30b86c844ff2dc7414044cc"
 
 [[package]]
 name = "windows_x86_64_msvc"
@@ -10743,9 +10743,9 @@ checksum = "9aec5da331524158c6d1a4ac0ab1541149c0b9505fde06423b02f5ef0106b9f0"
 
 [[package]]
 name = "windows_x86_64_msvc"
-version = "0.48.3"
+version = "0.48.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6ade45bc8bf02ae2aa34a9d54ba660a1a58204da34ba793c00d83ca3730b5f1"
+checksum = "ed94fce61571a4006852b7389a063ab983c02eb1bb37b47f8272ce92d06d9538"
 
 [[package]]
 name = "winnow"
