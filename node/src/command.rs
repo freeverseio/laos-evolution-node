@@ -77,7 +77,7 @@ pub fn run() -> sc_cli::Result<()> {
 		Some(Subcommand::Benchmark(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			match cmd {
-				BenchmarkCmd::Pallet(cmd) =>
+				BenchmarkCmd::Pallet(cmd) => {
 					if cfg!(feature = "runtime-benchmarks") {
 						runner.sync_run(|config| cmd.run::<Block, ()>(config))
 					} else {
@@ -86,7 +86,8 @@ pub fn run() -> sc_cli::Result<()> {
 					You can enable it with `--features runtime-benchmarks`."
 						);
 						Ok(())
-					},
+					}
+				},
 				_ => Err("Unsupported benchmarking subcommand".into()),
 			}
 		},
