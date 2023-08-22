@@ -1,19 +1,47 @@
+// Copyright 2019-2021 Parity Technologies (UK) Ltd.
+// This file is part of Parity Bridges Common.
+
+// Parity Bridges Common is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// Parity Bridges Common is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
+
+use clap::Parser;
 use sc_cli::RunCmd;
 
-#[derive(Debug, clap::Parser)]
+#[derive(Debug, Parser)]
 pub struct Cli {
-	#[command(subcommand)]
+	#[structopt(subcommand)]
 	pub subcommand: Option<Subcommand>,
 
-	#[clap(flatten)]
+	#[structopt(flatten)]
 	pub run: RunCmd,
 }
 
-#[derive(Debug, clap::Subcommand)]
+/// Possible subcommands of the main binary.
+#[derive(Debug, Parser)]
+#[allow(clippy::large_enum_variant)]
 pub enum Subcommand {
-	/// Key management cli utilities
-	#[command(subcommand)]
+	/// Key management CLI utilities
+	#[clap(subcommand)]
 	Key(sc_cli::KeySubcommand),
+
+	/// Verify a signature for a message, provided on `STDIN`, with a given (public or secret) key.
+	Verify(sc_cli::VerifyCmd),
+
+	/// Generate a seed that provides a vanity address.
+	Vanity(sc_cli::VanityCmd),
+
+	/// Sign a message, with a given (secret) key.
+	Sign(sc_cli::SignCmd),
 
 	/// Build a chain specification.
 	BuildSpec(sc_cli::BuildSpecCmd),
@@ -36,17 +64,10 @@ pub enum Subcommand {
 	/// Revert the chain to a previous state.
 	Revert(sc_cli::RevertCmd),
 
-	// /// Sub-commands concerned with benchmarking.
-	// #[command(subcommand)]
-	// Benchmark(frame_benchmarking_cli::BenchmarkCmd),
-	/// Try some command against runtime state.
-	#[cfg(feature = "try-runtime")]
-	TryRuntime(try_runtime_cli::TryRuntimeCmd),
+	/// Inspect blocks or extrinsics.
+	Inspect(node_inspect::cli::InspectCmd),
 
-	/// Try some command against runtime state. Note: `try-runtime` feature must be enabled.
-	#[cfg(not(feature = "try-runtime"))]
-	TryRuntime,
-
-	/// Db meta columns information.
-	ChainInfo(sc_cli::ChainInfoCmd),
+	/// Benchmark runtime pallets.
+	#[clap(subcommand)]
+	Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 }

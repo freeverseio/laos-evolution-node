@@ -14,13 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
-use substrate_wasm_builder::WasmBuilder;
+mod pallet_bridge_messages_messages_bench_runtime_with_rialto_messages_instance;
+mod pallet_bridge_messages_messages_bench_runtime_with_rialto_parachain_messages_instance;
 
-fn main() {
-	WasmBuilder::new()
-		.with_current_project()
-		.import_memory()
-		.export_heap_base()
-		.disable_runtime_version_section_check()
-		.build()
-}
+pub use pallet_bridge_messages_messages_bench_runtime_with_rialto_messages_instance::WeightInfo as RialtoMessagesWeightInfo;
+pub use pallet_bridge_messages_messages_bench_runtime_with_rialto_parachain_messages_instance::WeightInfo as RialtoParachainMessagesWeightInfo;
