@@ -144,7 +144,7 @@ pub fn native_version() -> NativeVersion {
 }
 
 parameter_types! {
-	pub const BlockHashCount: BlockNumber = 250;
+	pub const BlockHashCount: BlockNumber = 2500;
 	pub const Version: RuntimeVersion = VERSION;
 	pub const DbWeight: RuntimeDbWeight = RuntimeDbWeight {
 		read: 60_000_000, // ~0.06 ms = ~60 µs
