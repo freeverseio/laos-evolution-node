@@ -16,13 +16,8 @@ use ep_core::{
 	AccountId, Balance, BlockLength, BlockNumber, BlockWeights, Hash, Hasher, Header, Nonce,
 	Signature, MINUTES,
 };
-use frame_support::{
-	dispatch::DispatchClass,
-	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
-	RuntimeDebug,
-};
+use frame_support::{dispatch::DispatchClass, weights::Weight, RuntimeDebug};
 use sp_core::storage::StateVersion;
-use sp_runtime::Perbill;
 use sp_std::prelude::*;
 
 /// Number of extra bytes (excluding size of storage value itself) of storage proof, built at
@@ -34,17 +29,6 @@ pub const EXTRA_STORAGE_PROOF_SIZE: u32 = 1024;
 ///
 /// Can be computed by subtracting encoded call size from raw transaction size.
 pub const TX_EXTRA_BYTES: u32 = 103;
-
-/// Maximum weight of single Evochain block.
-///
-/// This represents 0.5 seconds of compute assuming a target block time of six seconds.
-///
-/// Max PoV size is set to max value, since it isn't important for relay/standalone chains.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight =
-	Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_div(2), u64::MAX);
-
-/// Represents the portion of a block that will be used by Normal extrinsics.
-pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 /// Maximal number of unrewarded relayer entries in Evochain confirmation transaction.
 pub const MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX: MessageNonce = 128;
