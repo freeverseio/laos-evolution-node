@@ -19,23 +19,26 @@
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+// Re-export core Evochain primitives.
+pub use ep_core::*;
+
 use bp_header_chain::ChainWithGrandpa;
 use bp_messages::{
 	ChainWithMessages, InboundMessageDetails, LaneId, MessageNonce, MessagePayload,
 	OutboundMessageDetails,
 };
 use bp_runtime::{decl_bridge_finality_runtime_apis, decl_bridge_runtime_apis, Chain, ChainId};
+use ep_core::{
+	AccountId, Balance, BlockLength, BlockNumber, BlockWeights, Hash, Hasher, Header, Nonce,
+	Signature, MINUTES,
+};
 use frame_support::{
 	dispatch::DispatchClass,
-	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, IdentityFee, Weight},
+	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 	RuntimeDebug,
 };
-use frame_system::limits;
-use sp_core::{storage::StateVersion, Hasher as HasherT};
-use sp_runtime::{
-	traits::{BlakeTwo256, IdentifyAccount, Verify},
-	MultiSignature, MultiSigner, Perbill,
-};
+use sp_core::storage::StateVersion;
+use sp_runtime::Perbill;
 use sp_std::prelude::*;
 
 /// Number of extra bytes (excluding size of storage value itself) of storage proof, built at
@@ -70,7 +73,7 @@ pub const MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX: MessageNonce = 128;
 ///
 /// Note that since this is a target sessions may change before/after this time depending on network
 /// conditions.
-pub const SESSION_LENGTH: BlockNumber = 5 * time_units::MINUTES;
+pub const SESSION_LENGTH: BlockNumber = 5 * MINUTES;
 
 /// Maximal number of GRANDPA authorities at Evochain.
 pub const MAX_AUTHORITIES_COUNT: u32 = 5;
@@ -95,57 +98,6 @@ pub const AVERAGE_HEADER_SIZE_IN_JUSTIFICATION: u32 = 256;
 pub const MAX_HEADER_SIZE: u32 = MAX_AUTHORITIES_COUNT
 	.saturating_mul(3)
 	.saturating_add(AVERAGE_HEADER_SIZE_IN_JUSTIFICATION);
-
-/// Re-export `time_units` to make usage easier.
-pub use time_units::*;
-
-/// Human readable time units defined in terms of number of blocks.
-pub mod time_units {
-	use super::BlockNumber;
-
-	/// Milliseconds between Evochain chain blocks.
-	pub const MILLISECS_PER_BLOCK: u64 = 6000;
-	/// Slot duration in Evochain chain consensus algorithms.
-	pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
-
-	/// A minute, expressed in Evochain chain blocks.
-	pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
-	/// A hour, expressed in Evochain chain blocks.
-	pub const HOURS: BlockNumber = MINUTES * 60;
-	/// A day, expressed in Evochain chain blocks.
-	pub const DAYS: BlockNumber = HOURS * 24;
-}
-
-/// Block number type used in Evochain.
-pub type BlockNumber = u32;
-
-/// Hash type used in Evochain.
-pub type Hash = <BlakeTwo256 as HasherT>::Out;
-
-/// Type of object that can produce hashes on Evochain.
-pub type Hasher = BlakeTwo256;
-
-/// The header type used by Evochain.
-pub type Header = sp_runtime::generic::Header<BlockNumber, Hasher>;
-
-/// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
-pub type Signature = MultiSignature;
-
-/// Some way of identifying an account on the chain. We intentionally make it equivalent
-/// to the public key of our transaction signing scheme.
-pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
-
-/// Public key of the chain account that may be used to verify signatures.
-pub type AccountSigner = MultiSigner;
-
-/// Balance of an account.
-pub type Balance = u64;
-
-/// Nonce of a transaction in the chain.
-pub type Nonce = u32;
-
-/// Weight-to-Fee type used by Evochain.
-pub type WeightToFee = IdentityFee<Balance>;
 
 /// Evochain chain.
 #[derive(RuntimeDebug)]
@@ -194,15 +146,6 @@ impl ChainWithMessages for Evochain {
 		MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
 	const MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX: MessageNonce =
 		MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
-}
-
-frame_support::parameter_types! {
-	/// Size limit of the Evochain blocks.
-	pub BlockLength: limits::BlockLength =
-		limits::BlockLength::max_with_normal_ratio(2 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
-	/// Weight limit of the Evochain blocks.
-	pub BlockWeights: limits::BlockWeights =
-		limits::BlockWeights::with_sensible_defaults(MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
 }
 
 /// Name of the With-Evochain GRANDPA pallet instance that is deployed at bridged chains.
