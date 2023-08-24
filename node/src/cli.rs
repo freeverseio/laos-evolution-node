@@ -10,6 +10,7 @@ pub struct Cli {
 }
 
 #[derive(Debug, clap::Subcommand)]
+#[allow(clippy::large_enum_variant)]
 pub enum Subcommand {
 	/// Key management cli utilities
 	#[command(subcommand)]
@@ -36,9 +37,10 @@ pub enum Subcommand {
 	/// Revert the chain to a previous state.
 	Revert(sc_cli::RevertCmd),
 
-	// /// Sub-commands concerned with benchmarking.
-	// #[command(subcommand)]
-	// Benchmark(frame_benchmarking_cli::BenchmarkCmd),
+	/// Sub-commands concerned with benchmarking.
+	#[command(subcommand)]
+	Benchmark(frame_benchmarking_cli::BenchmarkCmd),
+
 	/// Try some command against runtime state.
 	#[cfg(feature = "try-runtime")]
 	TryRuntime(try_runtime_cli::TryRuntimeCmd),
