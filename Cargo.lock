@@ -1934,30 +1934,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e48c92028aaa870e83d51c64e5d4e0b6981b360c522198c23959f219a4e1b15b"
 
 [[package]]
-name = "ep-core"
-version = "0.1.0"
-dependencies = [
- "bp-header-chain",
- "bp-messages",
- "bp-runtime",
- "fixed-hash",
- "frame-support",
- "frame-system",
- "hash256-std-hasher",
- "impl-codec",
- "impl-serde",
- "parity-util-mem",
- "scale-info",
- "serde",
- "sp-api",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "sp-trie",
-]
-
-[[package]]
 name = "equivalent"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1989,6 +1965,30 @@ name = "event-listener"
 version = "2.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0"
+
+[[package]]
+name = "evochain-primitives"
+version = "0.1.0"
+dependencies = [
+ "bp-header-chain",
+ "bp-messages",
+ "bp-runtime",
+ "fixed-hash",
+ "frame-support",
+ "frame-system",
+ "hash256-std-hasher",
+ "impl-codec",
+ "impl-serde",
+ "parity-util-mem",
+ "scale-info",
+ "serde",
+ "sp-api",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "sp-trie",
+]
 
 [[package]]
 name = "exit-future"
@@ -4575,7 +4575,7 @@ dependencies = [
 name = "node-template-runtime"
 version = "4.0.0-dev"
 dependencies = [
- "ep-core",
+ "evochain-primitives",
  "fp-account",
  "frame-benchmarking",
  "frame-executive",
