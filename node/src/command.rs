@@ -7,9 +7,6 @@ use node_template_runtime::Block;
 use sc_cli::SubstrateCli;
 use sc_service::PartialComponents;
 
-#[cfg(feature = "try-runtime")]
-use try_runtime_cli::block_building_info::timestamp_with_aura_info;
-
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
 		"Substrate Node".into()
@@ -113,9 +110,8 @@ pub fn run() -> sc_cli::Result<()> {
 				Ok((cmd.run(client, backend, Some(aux_revert)), task_manager))
 			})
 		},
-		#[cfg(feature = "runtime-benchmarks")]
-		Some(Subcommand::Benchmark(_cmd)) => {
-			todo!("Benchmark is not implemented yet")
+		Some(Subcommand::Benchmark(_)) => {
+			todo!("Benchmarking is not supported in Evochain yet")
 		},
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(_cmd)) => {
