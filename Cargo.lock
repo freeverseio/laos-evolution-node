@@ -4636,7 +4636,6 @@ name = "node-template-runtime"
 version = "4.0.0-dev"
 dependencies = [
  "bp-evochain",
- "fp-account",
  "frame-benchmarking",
  "frame-executive",
  "frame-support",
