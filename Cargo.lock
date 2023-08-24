@@ -688,30 +688,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bp-evochain"
-version = "0.1.0"
-dependencies = [
- "bp-header-chain",
- "bp-messages",
- "bp-runtime",
- "fixed-hash",
- "frame-support",
- "frame-system",
- "hash256-std-hasher",
- "impl-codec",
- "impl-serde",
- "parity-util-mem",
- "scale-info",
- "serde",
- "sp-api",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "sp-trie",
-]
-
-[[package]]
 name = "bp-header-chain"
 version = "0.1.0"
 source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#0298cf94509177ce18119e9862f299cb18afc47c"
@@ -1956,6 +1932,30 @@ name = "environmental"
 version = "1.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e48c92028aaa870e83d51c64e5d4e0b6981b360c522198c23959f219a4e1b15b"
+
+[[package]]
+name = "ep-core"
+version = "0.1.0"
+dependencies = [
+ "bp-header-chain",
+ "bp-messages",
+ "bp-runtime",
+ "fixed-hash",
+ "frame-support",
+ "frame-system",
+ "hash256-std-hasher",
+ "impl-codec",
+ "impl-serde",
+ "parity-util-mem",
+ "scale-info",
+ "serde",
+ "sp-api",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "sp-trie",
+]
 
 [[package]]
 name = "equivalent"
@@ -4575,7 +4575,7 @@ dependencies = [
 name = "node-template-runtime"
 version = "4.0.0-dev"
 dependencies = [
- "bp-evochain",
+ "ep-core",
  "fp-account",
  "frame-benchmarking",
  "frame-executive",

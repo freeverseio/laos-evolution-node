@@ -1,5 +1,5 @@
 [package]
-name = "bp-evochain"
+name = "ep-core"
 description = "Primitives of Evochain runtime."
 version = "0.1.0"
 authors = ["Parity Technologies <admin@parity.io>"]
