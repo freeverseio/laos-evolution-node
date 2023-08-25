@@ -61,6 +61,9 @@ pub type Signature = MultiSignature;
 /// to the public key of our transaction signing scheme.
 pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 
+/// The address format for describing accounts.
+pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
+
 /// Public key of the chain account that may be used to verify signatures.
 pub type AccountSigner = MultiSigner;
 
