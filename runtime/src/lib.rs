@@ -48,26 +48,26 @@ pub use sp_runtime::{Perbill, Permill};
 pub use pallet_template;
 
 /// An index to a block.
-pub type BlockNumber = ep_core::BlockNumber;
+pub type BlockNumber = evochain_primitives::BlockNumber;
 
 /// The type for storing how many extrinsics an account has signed.
-pub type Nonce = ep_core::Nonce;
+pub type Nonce = evochain_primitives::Nonce;
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
-pub type Signature = ep_core::Signature;
+pub type Signature = evochain_primitives::Signature;
 
 /// Some way of identifying an account on the chain. We intentionally make it equivalent
 /// to the public key of our transaction signing scheme.
-pub type AccountId = ep_core::AccountId;
+pub type AccountId = evochain_primitives::AccountId;
 
 /// Balance of an account.
-pub type Balance = ep_core::Balance;
+pub type Balance = evochain_primitives::Balance;
 
 /// A hash of some data used by the chain.
-pub type Hash = ep_core::Hash;
+pub type Hash = evochain_primitives::Hash;
 
 /// Hashing type
-pub type Hashing = ep_core::Hasher;
+pub type Hashing = evochain_primitives::Hasher;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
@@ -230,7 +230,7 @@ impl pallet_timestamp::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: ep_core::Balance = 500;
+	pub const ExistentialDeposit: evochain_primitives::Balance = 500;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -300,9 +300,9 @@ construct_runtime!(
 );
 
 /// The address format for describing accounts.
-pub type Address = ep_core::AccountId;
+pub type Address = evochain_primitives::AccountId;
 /// Block header type as expected by this runtime.
-pub type Header = ep_core::Header;
+pub type Header = evochain_primitives::Header;
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// The SignedExtension to the basic transaction logic.

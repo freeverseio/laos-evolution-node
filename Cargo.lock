@@ -688,61 +688,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bp-header-chain"
-version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#0298cf94509177ce18119e9862f299cb18afc47c"
-dependencies = [
- "bp-runtime",
- "finality-grandpa",
- "frame-support",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-consensus-grandpa",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "bp-messages"
-version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#0298cf94509177ce18119e9862f299cb18afc47c"
-dependencies = [
- "bp-header-chain",
- "bp-runtime",
- "frame-support",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-core",
- "sp-io",
- "sp-std",
-]
-
-[[package]]
-name = "bp-runtime"
-version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#0298cf94509177ce18119e9862f299cb18afc47c"
-dependencies = [
- "frame-support",
- "frame-system",
- "hash-db",
- "impl-trait-for-tuples",
- "num-traits",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-state-machine",
- "sp-std",
- "sp-trie",
- "trie-db",
-]
-
-[[package]]
 name = "bs58"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1934,32 +1879,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e48c92028aaa870e83d51c64e5d4e0b6981b360c522198c23959f219a4e1b15b"
 
 [[package]]
-name = "ep-bridge"
-version = "0.1.0"
-dependencies = [
- "bp-header-chain",
- "bp-messages",
- "bp-runtime",
- "ep-core",
- "frame-support",
- "frame-system",
- "sp-api",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "ep-core"
-version = "0.1.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "sp-core",
- "sp-runtime",
-]
-
-[[package]]
 name = "equivalent"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1991,6 +1910,16 @@ name = "event-listener"
 version = "2.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0"
+
+[[package]]
+name = "evochain-primitives"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "sp-core",
+ "sp-runtime",
+]
 
 [[package]]
 name = "exit-future"
@@ -4577,7 +4506,7 @@ dependencies = [
 name = "node-template-runtime"
 version = "4.0.0-dev"
 dependencies = [
- "ep-core",
+ "evochain-primitives",
  "fp-account",
  "frame-benchmarking",
  "frame-executive",

@@ -45,7 +45,7 @@ frame-system-rpc-runtime-api = { default-features = false, git = "https://github
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 
 # Primitive types
-ep-core = { path = "../primitives/core", default-features = false }
+evochain-primitives = { path = "../primitives/core", default-features = false }
 
 # Used for runtime benchmarking
 frame-benchmarking = { default-features = false, git = "https://github.com/paritytech/substrate.git", optional = true , branch = "polkadot-v1.0.0" }
@@ -61,7 +61,7 @@ substrate-wasm-builder = { git = "https://github.com/paritytech/substrate.git", 
 [features]
 default = ["std"]
 std = [
-	"ep-core/std",
+	"evochain-primitives/std",
 	"frame-try-runtime?/std",
 	"frame-system-benchmarking?/std",
 	"frame-benchmarking?/std",
