@@ -59,7 +59,7 @@ impl Alternative {
 	pub(crate) fn load(self) -> ChainSpec {
 		let properties = Some(
 			serde_json::json!({
-				"tokenDecimals": 18,
+				"tokenDecimals": 10,
 				"tokenSymbol": "EVOL"
 			})
 			.as_object()
