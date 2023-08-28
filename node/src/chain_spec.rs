@@ -95,7 +95,7 @@ impl Alternative {
 				sc_service::ChainType::Local,
 				|| {
 					testnet_genesis(
-						LOCAL_AUTHORITIES_ACCOUNTS
+						[LOCAL_AUTHORITIES_ACCOUNTS[0], LOCAL_AUTHORITIES_ACCOUNTS[1]]
 							.into_iter()
 							.map(get_authority_keys_from_seed)
 							.collect(),
