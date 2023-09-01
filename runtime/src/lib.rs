@@ -278,9 +278,6 @@ impl pallet_template::Config for Runtime {
 	type WeightInfo = pallet_template::weights::SubstrateWeight<Runtime>;
 }
 
-/// Insance of Rococo GRANDPA
-pub type RococoGrandpaInstance = ();
-
 impl pallet_bridge_grandpa::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type BridgedChain = bp_rococo::Rococo;
