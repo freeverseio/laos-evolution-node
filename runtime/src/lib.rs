@@ -278,7 +278,9 @@ impl pallet_template::Config for Runtime {
 	type WeightInfo = pallet_template::weights::SubstrateWeight<Runtime>;
 }
 
-impl pallet_bridge_grandpa::Config for Runtime {
+pub type RococoGrandpaInsance = ();
+
+impl pallet_bridge_grandpa::Config<RococoGrandpaInsance> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type BridgedChain = bp_rococo::Rococo;
 	type MaxFreeMandatoryHeadersPerBlock = ConstU32<4>;
