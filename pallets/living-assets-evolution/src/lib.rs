@@ -108,7 +108,7 @@ pub mod pallet {
 			CollectionCounter::<T>::put(counter);
 
 			// Emit an event.
-			Self::deposit_event(Event::CollectionCreated { collection_id, who });
+			Self::deposit_event(Event::CollectionCreated { collection_id, owner: who });
 
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
