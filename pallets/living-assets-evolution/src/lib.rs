@@ -56,7 +56,7 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Collection created
 		/// parameters. [collection_id, who]
-		CollectionCreated { collection_id: CollectionId, who: T::AccountId },
+		CollectionCreated { collection_id: CollectionId, owner: T::AccountId },
 	}
 
 	// Errors inform users that something went wrong.
