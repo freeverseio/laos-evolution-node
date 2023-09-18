@@ -33,7 +33,7 @@ fn counter_of_collection_increases() {
 }
 
 #[test]
-fn crete_collection_emits_event() {
+fn create_collection_emits_event() {
 	new_test_ext().execute_with(|| {
 		// Go past genesis block so events get deposited
 		System::set_block_number(1);
