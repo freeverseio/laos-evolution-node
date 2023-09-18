@@ -40,6 +40,6 @@ fn create_collection_emits_event() {
 		// Create a collection
 		assert_ok!(TemplateModule::create_collection(RuntimeOrigin::signed(1)));
 		// Assert that the correct event was deposited
-		System::assert_last_event(Event::CollectionCreated { collection_id: 0, who: 1 }.into());
+		System::assert_last_event(Event::CollectionCreated { collection_id: 0, owner: 1 }.into());
 	});
 }
