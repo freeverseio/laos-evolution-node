@@ -13,7 +13,7 @@
 // pallet
 // --chain=dev
 // --pallet=pallet_living_assets_evolution
-// --extrinsic=create_collection
+// --extrinsic=*
 // --steps=50
 // --repeat=20
 // --wasm-execution=compiled
@@ -46,8 +46,8 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `6`
 		//  Estimated: `1493`
-		// Minimum execution time: 32_165_000 picoseconds.
-		Weight::from_parts(33_723_000, 1493)
+		// Minimum execution time: 9_275_000 picoseconds.
+		Weight::from_parts(9_835_000, 1493)
 			.saturating_add(T::DbWeight::get().reads(1_u64))
 			.saturating_add(T::DbWeight::get().writes(2_u64))
 	}
@@ -63,8 +63,8 @@ impl WeightInfo for () {
 		// Proof Size summary in bytes:
 		//  Measured:  `6`
 		//  Estimated: `1493`
-		// Minimum execution time: 32_165_000 picoseconds.
-		Weight::from_parts(33_723_000, 1493)
+		// Minimum execution time: 9_275_000 picoseconds.
+		Weight::from_parts(9_835_000, 1493)
 			.saturating_add(RocksDbWeight::get().reads(1_u64))
 			.saturating_add(RocksDbWeight::get().writes(2_u64))
 	}
