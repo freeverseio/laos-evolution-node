@@ -64,7 +64,7 @@ pub mod pallet {
 	/// This will contain external URI in a raw form
 	#[pallet::storage]
 	#[pallet::getter(fn asset_info)]
-	pub type AssetInfo<T: Config> = StorageDoubleMap<
+	pub type AssetMetadata<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
 		CollectionId,
@@ -137,12 +137,12 @@ pub mod pallet {
 
 		/// Mint new asset with external URI
 		#[pallet::call_index(1)]
-		#[pallet::weight(0)]
+		#[pallet::weight(T::WeightInfo::mint_with_external_uri())]
 		pub fn mint_with_external_uri(
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
-			to: AccountIdOf<T>,
 			slot: Slot,
+			to: AccountIdOf<T>,
 			token_uri: TokenUriOf<T>,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
@@ -159,7 +159,7 @@ pub mod pallet {
 
 			AssetOwner::<T>::insert(collection_id, slot, to.clone());
 
-			AssetInfo::<T>::insert(collection_id, slot, token_uri);
+			AssetMetadata::<T>::insert(collection_id, slot, token_uri);
 
 			Ok(())
 		}

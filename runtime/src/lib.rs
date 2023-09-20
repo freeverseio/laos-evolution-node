@@ -271,10 +271,16 @@ impl pallet_sudo::Config for Runtime {
 	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+	/// Max length of the `TokenUri`
+	pub const MaxTokenUriLength: u32 = 512;
+}
+
 /// Configure the pallet-living-assets-evolution in pallets/living-assets-evolution.
 impl pallet_living_assets_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_living_assets_evolution::weights::SubstrateWeight<Runtime>;
+	type MaxTokenUriLength = MaxTokenUriLength;
 }
 
 impl pallet_bridge_grandpa::Config for Runtime {
