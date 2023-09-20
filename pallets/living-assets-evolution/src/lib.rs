@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+pub use pallet::*;
 #[cfg(test)]
 mod mock;
 
@@ -11,18 +12,15 @@ mod benchmarking;
 mod types;
 pub mod weights;
 
-use frame_support::pallet_prelude::*;
 use types::*;
-
-pub use pallet::*;
 pub use weights::*;
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::Blake2_128Concat;
+	use frame_support::pallet_prelude::*;
+	use frame_support::sp_runtime::traits::One;
 	use frame_system::pallet_prelude::*;
-	use sp_runtime::traits::One;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -83,7 +81,7 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Collection created
 		/// parameters. [collection_id, who]
-		CollectionCreated { collection_id: CollectionId, who: AccountIdOf<T> },
+		CollectionCreated { collection_id: CollectionId, owner: AccountIdOf<T> },
 		/// Asset minted
 		/// [collection_id, slot, to, token_uri]
 		AssetMinted {
@@ -131,7 +129,7 @@ pub mod pallet {
 			CollectionCounter::<T>::put(counter);
 
 			// Emit an event.
-			Self::deposit_event(Event::CollectionCreated { collection_id, who });
+			Self::deposit_event(Event::CollectionCreated { collection_id, owner: who });
 
 			// Return a successful DispatchResult
 			Ok(())
