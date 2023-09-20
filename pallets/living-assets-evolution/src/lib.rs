@@ -1,10 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/reference/frame-pallets/>
-pub use pallet::*;
-
 #[cfg(test)]
 mod mock;
 
@@ -13,18 +8,21 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
+mod types;
 pub mod weights;
+
+use frame_support::pallet_prelude::*;
+use types::*;
+
+pub use pallet::*;
 pub use weights::*;
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
-	use frame_support::sp_runtime::traits::One;
+	use frame_support::Blake2_128Concat;
 	use frame_system::pallet_prelude::*;
-
-	/// Collection id type
-	pub type CollectionId = u64;
+	use sp_runtime::traits::One;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -34,6 +32,8 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+		/// Limit for the length of `token_uri`
+		type MaxTokenUriLength: Get<u32>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
 	}
@@ -43,11 +43,38 @@ pub mod pallet {
 	#[pallet::getter(fn collection_counter)]
 	pub(super) type CollectionCounter<T: Config> = StorageValue<_, CollectionId, ValueQuery>;
 
-	// storage for the ownership of collections
+	/// Storage for the ownership of collections
 	#[pallet::storage]
 	#[pallet::getter(fn collection_owner)]
 	pub type CollectionOwner<T: Config> =
-		StorageMap<_, Blake2_128Concat, CollectionId, T::AccountId, OptionQuery>;
+		StorageMap<_, Blake2_128Concat, CollectionId, AccountIdOf<T>, OptionQuery>;
+
+	/// Minted assets
+	#[pallet::storage]
+	#[pallet::getter(fn asset_owner)]
+	pub type AssetOwner<T: Config> = StorageDoubleMap<
+		_,
+		Blake2_128Concat,
+		CollectionId,
+		Blake2_128Concat,
+		Slot,
+		AccountIdOf<T>,
+		OptionQuery,
+	>;
+
+	/// Asset metadata
+	/// This will contain external URI in a raw form
+	#[pallet::storage]
+	#[pallet::getter(fn asset_info)]
+	pub type AssetInfo<T: Config> = StorageDoubleMap<
+		_,
+		Blake2_128Concat,
+		CollectionId,
+		Blake2_128Concat,
+		Slot,
+		TokenUriOf<T>,
+		OptionQuery,
+	>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
@@ -56,7 +83,18 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Collection created
 		/// parameters. [collection_id, who]
-		CollectionCreated { collection_id: CollectionId, who: T::AccountId },
+		CollectionCreated { collection_id: CollectionId, who: AccountIdOf<T> },
+		/// Asset minted
+		/// [collection_id, slot, to, token_uri]
+		AssetMinted {
+			collection_id: CollectionId,
+			slot: Slot,
+			to: AccountIdOf<T>,
+			token_uri: TokenUriOf<T>,
+		},
+		/// External URI set
+		/// [collection_id, slot, token_uri]
+		ExternalUriSet { collection_id: CollectionId, slot: Slot, token_uri: TokenUriOf<T> },
 	}
 
 	// Errors inform users that something went wrong.
@@ -64,6 +102,10 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// The collection ID counter has overflowed
 		CollectionIdOverflow,
+		/// Collection does not exist
+		CollectionDoesNotExist,
+		/// Not the owner of the collection
+		NoPermission,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -76,9 +118,6 @@ pub mod pallet {
 		#[pallet::call_index(0)]
 		#[pallet::weight(0)]
 		pub fn create_collection(origin: OriginFor<T>) -> DispatchResult {
-			// Check that the extrinsic was signed and get the signer.
-			// This function will return an error if the extrinsic is not signed.
-			// https://docs.substrate.io/main-docs/build/origins/
 			let who = ensure_signed(origin)?;
 
 			let collection_id = Self::collection_counter();
@@ -94,7 +133,36 @@ pub mod pallet {
 			// Emit an event.
 			Self::deposit_event(Event::CollectionCreated { collection_id, who });
 
-			// Return a successful DispatchResultWithPostInfo
+			// Return a successful DispatchResult
+			Ok(())
+		}
+
+		/// Mint new asset with external URI
+		#[pallet::call_index(1)]
+		#[pallet::weight(0)]
+		pub fn mint_with_external_uri(
+			origin: OriginFor<T>,
+			collection_id: CollectionId,
+			to: AccountIdOf<T>,
+			slot: Slot,
+			token_uri: TokenUriOf<T>,
+		) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+
+			ensure!(
+				CollectionOwner::<T>::get(collection_id) == Some(who),
+				Error::<T>::NoPermission
+			);
+
+			ensure!(
+				CollectionOwner::<T>::contains_key(collection_id),
+				Error::<T>::CollectionDoesNotExist
+			);
+
+			AssetOwner::<T>::insert(collection_id, slot, to.clone());
+
+			AssetInfo::<T>::insert(collection_id, slot, token_uri);
+
 			Ok(())
 		}
 	}

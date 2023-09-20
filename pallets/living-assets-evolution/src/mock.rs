@@ -1,5 +1,8 @@
 use crate as pallet_living_assets_evolution;
-use frame_support::traits::{ConstU16, ConstU64};
+use frame_support::{
+	parameter_types,
+	traits::{ConstU16, ConstU64},
+};
 use sp_core::H256;
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
@@ -43,9 +46,14 @@ impl frame_system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
+parameter_types! {
+	pub const MaxTokenUriLength: u32 = 512;
+}
+
 impl pallet_living_assets_evolution::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
+	type MaxTokenUriLength = MaxTokenUriLength;
 }
 
 // Build genesis storage according to the mock runtime.
