@@ -16,7 +16,7 @@ frame_support::construct_runtime!(
 	pub enum Test
 	{
 		System: frame_system,
-		TemplateModule: pallet_living_assets_evolution,
+		LivingAssets: pallet_living_assets_evolution,
 	}
 );
 

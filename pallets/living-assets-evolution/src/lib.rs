@@ -63,7 +63,7 @@ pub mod pallet {
 	/// Asset metadata
 	/// This will contain external URI in a raw form
 	#[pallet::storage]
-	#[pallet::getter(fn asset_info)]
+	#[pallet::getter(fn asset_metadata)]
 	pub type AssetMetadata<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
@@ -90,9 +90,6 @@ pub mod pallet {
 			to: AccountIdOf<T>,
 			token_uri: TokenUriOf<T>,
 		},
-		/// External URI set
-		/// [collection_id, slot, token_uri]
-		ExternalUriSet { collection_id: CollectionId, slot: Slot, token_uri: TokenUriOf<T> },
 	}
 
 	// Errors inform users that something went wrong.
@@ -104,6 +101,8 @@ pub mod pallet {
 		CollectionDoesNotExist,
 		/// Not the owner of the collection
 		NoPermission,
+		/// [`Slot`] is already minted
+		AlreadyMinted,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -136,6 +135,16 @@ pub mod pallet {
 		}
 
 		/// Mint new asset with external URI
+		///
+		/// This function performs the minting of a new asset with setting its external URI.
+		///
+		/// # Errors
+		///
+		///  This function returns a dispatch error in the following cases:
+		///
+		/// * [`NoPermission`](`Error::<T>::NoPermission`) - if the caller is not the owner of the collection
+		/// * [`CollectionDoesNotExist`](`Error::<T>::CollectionDoesNotExist`) - if the collection does not exist
+		/// * [`AlreadyMinted`](`Error::<T>::AlreadyMinted`) - if the asset is already minted
 		#[pallet::call_index(1)]
 		#[pallet::weight(T::WeightInfo::mint_with_external_uri())]
 		pub fn mint_with_external_uri(
@@ -148,18 +157,22 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 
 			ensure!(
-				CollectionOwner::<T>::get(collection_id) == Some(who),
-				Error::<T>::NoPermission
-			);
-
-			ensure!(
 				CollectionOwner::<T>::contains_key(collection_id),
 				Error::<T>::CollectionDoesNotExist
 			);
 
+			ensure!(
+				CollectionOwner::<T>::get(collection_id) == Some(who),
+				Error::<T>::NoPermission
+			);
+
+			ensure!(AssetOwner::<T>::get(collection_id, slot).is_none(), Error::<T>::AlreadyMinted);
+
 			AssetOwner::<T>::insert(collection_id, slot, to.clone());
 
-			AssetMetadata::<T>::insert(collection_id, slot, token_uri);
+			AssetMetadata::<T>::insert(collection_id, slot, token_uri.clone());
+
+			Self::deposit_event(Event::AssetMinted { collection_id, slot, to, token_uri });
 
 			Ok(())
 		}
