@@ -1,5 +1,10 @@
-use crate::{mock::*, types::TokenUriOf, CollectionId, Error, Event};
+use crate::{
+	mock::*,
+	types::{AssetId, Slot, TokenUriOf},
+	CollectionId, Error, Event,
+};
 use frame_support::{assert_noop, assert_ok};
+use sp_runtime::traits::Convert;
 
 /// Utility function to create a collection and return its ID
 fn create_collection(owner: u64) -> CollectionId {
@@ -59,23 +64,59 @@ fn mint_with_external_uri_works() {
 		let collection_id = create_collection(1);
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+		let slot = [0u8; 12].into();
 
 		assert_ok!(LivingAssets::mint_with_external_uri(
 			RuntimeOrigin::signed(1),
 			collection_id,
-			0,
+			slot,
 			1,
 			token_uri.clone()
 		));
 
-		assert_eq!(LivingAssets::asset_owner(collection_id, 0), Some(1));
-		assert_eq!(LivingAssets::asset_metadata(collection_id, 0), Some(token_uri.clone()));
+		assert_eq!(LivingAssets::asset_owner(collection_id, slot), Some(1));
+		assert_eq!(LivingAssets::asset_metadata(collection_id, slot), Some(token_uri.clone()));
 
-		System::assert_has_event(Event::Minted { collection_id, slot: 0, to: 1 }.into());
+		let expected_asset_id = {
+			let mut buf = [0u8; 32];
+			buf[..12].copy_from_slice(&slot.0);
+			buf[12..].copy_from_slice(
+				<Test as crate::Config>::AccountIdToH160::convert(1).as_fixed_bytes(),
+			);
+
+			AssetId::from(buf)
+		};
 		System::assert_has_event(
-			Event::ExplicitTokenURISet { collection_id, slot: 0, token_uri }.into(),
+			Event::Minted { collection_id, slot, to: 1, asset_id: expected_asset_id }.into(),
+		);
+		System::assert_has_event(
+			Event::ExplicitTokenURISet { collection_id, slot, token_uri }.into(),
 		);
 	});
+}
+
+#[test]
+fn slot_and_owner_to_asset_id_works() {
+	let slot: Slot = [0u8; 12].into();
+	let owner = 0;
+
+	let expected_asset_id = [0u8; 32].into();
+
+	assert_eq!(LivingAssets::slot_and_owner_to_asset_id((slot, owner)), expected_asset_id);
+
+	let mut expected_asset_id_bytes = [0; 32];
+
+	let slot: Slot = [1u8; 12].into();
+	let owner: AccountId = 1;
+	let mut owner_bytes = [0u8; 20];
+	owner_bytes[0..8].copy_from_slice(&owner.to_be_bytes());
+	expected_asset_id_bytes[..12].copy_from_slice(&slot.0);
+	expected_asset_id_bytes[12..].copy_from_slice(&owner_bytes);
+
+	assert_eq!(
+		LivingAssets::slot_and_owner_to_asset_id((slot, owner)),
+		AssetId::from(expected_asset_id_bytes)
+	);
 }
 
 #[test]
@@ -89,7 +130,7 @@ fn mint_with_external_uri_non_owner() {
 			LivingAssets::mint_with_external_uri(
 				RuntimeOrigin::signed(2),
 				collection_id,
-				0,
+				[0u8; 12].into(),
 				1,
 				token_uri.clone()
 			),
@@ -111,7 +152,7 @@ fn mint_with_external_uri_collection_does_not_exist() {
 			LivingAssets::mint_with_external_uri(
 				RuntimeOrigin::signed(1),
 				collection_id,
-				0,
+				[0u8; 12].into(),
 				1,
 				token_uri.clone()
 			),
@@ -131,7 +172,7 @@ fn mint_with_external_uri_asset_already_minted() {
 		assert_ok!(LivingAssets::mint_with_external_uri(
 			RuntimeOrigin::signed(1),
 			collection_id,
-			0,
+			[0u8; 12].into(),
 			1,
 			token_uri.clone()
 		));
@@ -140,7 +181,7 @@ fn mint_with_external_uri_asset_already_minted() {
 			LivingAssets::mint_with_external_uri(
 				RuntimeOrigin::signed(1),
 				collection_id,
-				0,
+				[0u8; 12].into(),
 				1,
 				token_uri.clone()
 			),

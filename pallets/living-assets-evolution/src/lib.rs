@@ -15,6 +15,9 @@ pub mod weights;
 use types::*;
 pub use weights::*;
 
+use sp_core::H160;
+use sp_runtime::traits::Convert;
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -31,9 +34,12 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Limit for the length of `token_uri`
+		#[pallet::constant]
 		type MaxTokenUriLength: Get<u32>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
+		/// Converts [`AccountId`] to [`H160`]
+		type AccountIdToH160: Convert<AccountIdOf<Self>, H160>;
 	}
 
 	/// Collection counter
@@ -83,7 +89,7 @@ pub mod pallet {
 		CollectionCreated { collection_id: CollectionId, owner: AccountIdOf<T> },
 		/// Asset minted
 		/// [collection_id, slot, to, token_uri]
-		Minted { collection_id: CollectionId, slot: Slot, to: AccountIdOf<T> },
+		Minted { collection_id: CollectionId, slot: Slot, to: AccountIdOf<T>, asset_id: AssetId },
 		/// External URI set
 		/// [collection_id, slot, token_uri]
 		ExplicitTokenURISet { collection_id: CollectionId, slot: Slot, token_uri: TokenUriOf<T> },
@@ -185,10 +191,36 @@ pub mod pallet {
 
 			ExplicitTokenURI::<T>::insert(collection_id, slot, token_uri.clone());
 
-			Self::deposit_event(Event::Minted { collection_id, slot, to });
+			// compose asset_id	from slot and owner
+			let asset_id = Self::slot_and_owner_to_asset_id((slot, to.clone()));
+
+			Self::deposit_event(Event::Minted { collection_id, slot, to, asset_id });
 			Self::deposit_event(Event::ExplicitTokenURISet { collection_id, slot, token_uri });
 
 			Ok(())
 		}
+	}
+}
+
+impl<T: Config> Pallet<T> {
+	// Utility functions
+	/// A struct responsible for converting `Slot` and `AccountId` to `AssetId`
+	///
+	/// Every slot is identified by a unique `asset_id = concat(slot #, owner_address)`
+	fn slot_and_owner_to_asset_id(slot_and_owner: (Slot, AccountIdOf<T>)) -> AssetId {
+		let (slot, owner) = slot_and_owner;
+
+		let mut bytes = [0u8; 32];
+
+		let slot_bytes: [u8; 12] = slot.into();
+
+		// NOTE: this will panic at runtime if two arrays overlap, we should see if there is a safer way to do this
+		bytes[..12].copy_from_slice(&slot_bytes);
+
+		let h160 = T::AccountIdToH160::convert(owner);
+		let account_id_bytes = h160.as_fixed_bytes();
+
+		bytes[12..].copy_from_slice(account_id_bytes);
+		AssetId::from(bytes)
 	}
 }
