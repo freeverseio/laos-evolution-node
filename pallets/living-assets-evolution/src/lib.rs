@@ -115,16 +115,16 @@ pub mod pallet {
 		///
 		/// # Storage Changes
 		///
-		/// - `CollectionOwner`: Inserts a new mapping from the generated `collection_id` to the `origin` account.
-		/// - `CollectionCounter`: Updates the counter for the next available `collection_id`.
+		/// - [`CollectionOwner`](`CollectionOwner`): Inserts a new mapping from the generated `collection_id` to the `origin` account.
+		/// - [`CollectionCounter`](`CollectionCounter`): Updates the counter for the next available `collection_id`.
 		///
 		/// # Events
 		///
-		/// Emits a `CollectionCreated` event upon successful execution.
+		/// Emits a [`CollectionCreated`](`Event::<T>::CollectionCreated`) event upon successful execution.
 		///
 		/// # Errors
 		///
-		/// - Returns `CollectionIdOverflow` if incrementing the `collection_id` counter would result in an overflow.
+		/// - Returns [`CollectionIdOverflow`](`Error::<T>::CollectionIdOverflow`) if incrementing the `collection_id` counter would result in an overflow.
 		#[pallet::call_index(0)]
 		#[pallet::weight(T::WeightInfo::create_collection())]
 		pub fn create_collection(origin: OriginFor<T>) -> DispatchResult {
