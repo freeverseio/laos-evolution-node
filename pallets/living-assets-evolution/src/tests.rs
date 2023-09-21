@@ -71,10 +71,10 @@ fn mint_with_external_uri_works() {
 		assert_eq!(LivingAssets::asset_owner(collection_id, 0), Some(1));
 		assert_eq!(LivingAssets::asset_metadata(collection_id, 0), Some(token_uri.clone()));
 
-		System::assert_has_event(
-			Event::ExternalUriSet { collection_id, slot: 0, token_uri }.into(),
-		);
 		System::assert_has_event(Event::Minted { collection_id, slot: 0, to: 1 }.into());
+		System::assert_has_event(
+			Event::ExplicitTokenURISet { collection_id, slot: 0, token_uri }.into(),
+		);
 	});
 }
 

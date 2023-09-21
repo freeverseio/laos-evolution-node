@@ -52,8 +52,8 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	}
 	/// Storage: `TemplateModule::CollectionOwner` (r:1 w:0)
 	/// Proof: `TemplateModule::CollectionOwner` (`max_values`: None, `max_size`: Some(56), added: 2531, mode: `MaxEncodedLen`)
-	/// Storage: `TemplateModule::AssetMetadata` (r:0 w:1)
-	/// Proof: `TemplateModule::AssetMetadata` (`max_values`: None, `max_size`: Some(562), added: 3037, mode: `MaxEncodedLen`)
+	/// Storage: `TemplateModule::ExplicitTokenURI` (r:0 w:1)
+	/// Proof: `TemplateModule::ExplicitTokenURI` (`max_values`: None, `max_size`: Some(562), added: 3037, mode: `MaxEncodedLen`)
 	/// Storage: `TemplateModule::AssetOwner` (r:0 w:1)
 	/// Proof: `TemplateModule::AssetOwner` (`max_values`: None, `max_size`: Some(80), added: 2555, mode: `MaxEncodedLen`)
 	fn mint_with_external_uri() -> Weight {
@@ -84,8 +84,8 @@ impl WeightInfo for () {
 	}
 	/// Storage: `TemplateModule::CollectionOwner` (r:1 w:0)
 	/// Proof: `TemplateModule::CollectionOwner` (`max_values`: None, `max_size`: Some(56), added: 2531, mode: `MaxEncodedLen`)
-	/// Storage: `TemplateModule::AssetMetadata` (r:0 w:1)
-	/// Proof: `TemplateModule::AssetMetadata` (`max_values`: None, `max_size`: Some(562), added: 3037, mode: `MaxEncodedLen`)
+	/// Storage: `TemplateModule::ExplicitTokenURI` (r:0 w:1)
+	/// Proof: `TemplateModule::ExplicitTokenURI` (`max_values`: None, `max_size`: Some(562), added: 3037, mode: `MaxEncodedLen`)
 	/// Storage: `TemplateModule::AssetOwner` (r:0 w:1)
 	/// Proof: `TemplateModule::AssetOwner` (`max_values`: None, `max_size`: Some(80), added: 2555, mode: `MaxEncodedLen`)
 	fn mint_with_external_uri() -> Weight {

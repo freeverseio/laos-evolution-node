@@ -60,11 +60,11 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
-	/// Asset metadata
+	/// Token URI which can override the default URI scheme and set explicitly
 	/// This will contain external URI in a raw form
 	#[pallet::storage]
 	#[pallet::getter(fn asset_metadata)]
-	pub type AssetMetadata<T: Config> = StorageDoubleMap<
+	pub type ExplicitTokenURI<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
 		CollectionId,
@@ -74,8 +74,7 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
-	// Pallets use events to inform users when important changes are made.
-	// https://docs.substrate.io/main-docs/build/events-errors/
+	/// Events for this pallet.
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
@@ -87,7 +86,7 @@ pub mod pallet {
 		Minted { collection_id: CollectionId, slot: Slot, to: AccountIdOf<T> },
 		/// External URI set
 		/// [collection_id, slot, token_uri]
-		ExternalUriSet { collection_id: CollectionId, slot: Slot, token_uri: TokenUriOf<T> },
+		ExplicitTokenURISet { collection_id: CollectionId, slot: Slot, token_uri: TokenUriOf<T> },
 	}
 
 	// Errors inform users that something went wrong.
@@ -168,10 +167,10 @@ pub mod pallet {
 
 			AssetOwner::<T>::insert(collection_id, slot, to.clone());
 
-			AssetMetadata::<T>::insert(collection_id, slot, token_uri.clone());
+			ExplicitTokenURI::<T>::insert(collection_id, slot, token_uri.clone());
 
 			Self::deposit_event(Event::Minted { collection_id, slot, to });
-			Self::deposit_event(Event::ExternalUriSet { collection_id, slot, token_uri });
+			Self::deposit_event(Event::ExplicitTokenURISet { collection_id, slot, token_uri });
 
 			Ok(())
 		}

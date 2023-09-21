@@ -38,7 +38,7 @@ mod benchmarks {
 		);
 
 		assert_eq!(AssetOwner::<T>::get(0, 0), Some(caller));
-		assert_eq!(AssetMetadata::<T>::get(0, 0), Some(token_uri));
+		assert_eq!(ExplicitTokenURI::<T>::get(0, 0), Some(token_uri));
 	}
 
 	impl_benchmark_test_suite!(LivingAssetsEvo, crate::mock::new_test_ext(), crate::mock::Test);
