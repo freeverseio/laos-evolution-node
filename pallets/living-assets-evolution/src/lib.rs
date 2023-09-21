@@ -84,12 +84,10 @@ pub mod pallet {
 		CollectionCreated { collection_id: CollectionId, owner: AccountIdOf<T> },
 		/// Asset minted
 		/// [collection_id, slot, to, token_uri]
-		AssetMinted {
-			collection_id: CollectionId,
-			slot: Slot,
-			to: AccountIdOf<T>,
-			token_uri: TokenUriOf<T>,
-		},
+		Minted { collection_id: CollectionId, slot: Slot, to: AccountIdOf<T> },
+		/// External URI set
+		/// [collection_id, slot, token_uri]
+		ExternalUriSet { collection_id: CollectionId, slot: Slot, token_uri: TokenUriOf<T> },
 	}
 
 	// Errors inform users that something went wrong.
@@ -172,7 +170,8 @@ pub mod pallet {
 
 			AssetMetadata::<T>::insert(collection_id, slot, token_uri.clone());
 
-			Self::deposit_event(Event::AssetMinted { collection_id, slot, to, token_uri });
+			Self::deposit_event(Event::Minted { collection_id, slot, to });
+			Self::deposit_event(Event::ExternalUriSet { collection_id, slot, token_uri });
 
 			Ok(())
 		}
