@@ -75,7 +75,7 @@ fn mint_with_external_uri_works() {
 		));
 
 		assert_eq!(LivingAssets::asset_owner(collection_id, slot), Some(1));
-		assert_eq!(LivingAssets::asset_metadata(collection_id, slot), Some(token_uri.clone()));
+		assert_eq!(LivingAssets::explicit_token_uri(collection_id, slot), Some(token_uri.clone()));
 
 		let expected_asset_id = {
 			let mut buf = [0u8; 32];
