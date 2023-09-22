@@ -24,6 +24,7 @@ pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_support::sp_runtime::traits::One;
 	use frame_system::pallet_prelude::*;
+	use sp_runtime::ArithmeticError;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -98,8 +99,6 @@ pub mod pallet {
 	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
-		/// The collection ID counter has overflowed
-		CollectionIdOverflow,
 		/// Collection does not exist
 		CollectionDoesNotExist,
 		/// Not the owner of the collection
@@ -130,7 +129,7 @@ pub mod pallet {
 		///
 		/// # Errors
 		///
-		/// - Returns [`CollectionIdOverflow`](`Error::<T>::CollectionIdOverflow`) if incrementing the `collection_id` counter would result in an overflow.
+		/// - Returns [`Overflow`](`ArithmeticError::<T>::Overflow`) if incrementing the `collection_id` counter would result in an overflow.
 		#[pallet::call_index(0)]
 		#[pallet::weight(T::WeightInfo::create_collection())]
 		pub fn create_collection(origin: OriginFor<T>) -> DispatchResult {
@@ -142,8 +141,7 @@ pub mod pallet {
 
 			// Attempt to increment the collection counter by 1. If this operation
 			// would result in an overflow, return early with an error
-			let counter =
-				collection_id.checked_add(One::one()).ok_or(Error::<T>::CollectionIdOverflow)?;
+			let counter = collection_id.checked_add(One::one()).ok_or(ArithmeticError::Overflow)?;
 			CollectionCounter::<T>::put(counter);
 
 			// Emit an event.
@@ -157,6 +155,9 @@ pub mod pallet {
 		///
 		/// This function performs the minting of a new asset with setting its external URI.
 		///
+		/// NOTE: This function will panic if the `slot` has a value greater than `2^96 - 1`
+		/// This will be fixed in the future https://github.com/freeverseio/laos-evolution-node/issues/77
+		///
 		/// # Errors
 		///
 		///  This function returns a dispatch error in the following cases:
@@ -164,6 +165,7 @@ pub mod pallet {
 		/// * [`NoPermission`](`Error::<T>::NoPermission`) - if the caller is not the owner of the collection
 		/// * [`CollectionDoesNotExist`](`Error::<T>::CollectionDoesNotExist`) - if the collection does not exist
 		/// * [`AlreadyMinted`](`Error::<T>::AlreadyMinted`) - if the asset is already minted
+		/// * [`Overflow`](`ArithmeticError::<T>::Overflow`) - if the `slot` is greater than `2^96 - 1`
 		#[pallet::call_index(1)]
 		#[pallet::weight(T::WeightInfo::mint_with_external_uri())]
 		pub fn mint_with_external_uri(
@@ -186,6 +188,10 @@ pub mod pallet {
 			);
 
 			ensure!(AssetOwner::<T>::get(collection_id, slot).is_none(), Error::<T>::AlreadyMinted);
+
+			// Slot must be 96 bits
+			// TODO: use a custom type for this https://github.com/freeverseio/laos-evolution-node/issues/77
+			ensure!(slot <= MAX_U96, ArithmeticError::Overflow);
 
 			AssetOwner::<T>::insert(collection_id, slot, to.clone());
 
@@ -212,10 +218,11 @@ impl<T: Config> Pallet<T> {
 
 		let mut bytes = [0u8; 32];
 
-		let slot_bytes: [u8; 12] = slot.into();
+		let slot_bytes = slot.to_be_bytes();
 
 		// NOTE: this will panic at runtime if two arrays overlap, we should see if there is a safer way to do this
-		bytes[..12].copy_from_slice(&slot_bytes);
+		// we also use the last 12 bytes of the slot, since the first 4 bytes are always 0
+		bytes[..12].copy_from_slice(&slot_bytes[4..]);
 
 		let h160 = T::AccountIdToH160::convert(owner);
 		let account_id_bytes = h160.as_fixed_bytes();

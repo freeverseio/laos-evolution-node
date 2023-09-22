@@ -28,7 +28,7 @@ mod benchmarks {
 
 		let token_uri: TokenUriOf<T> =
 			vec![0; T::MaxTokenUriLength::get() as usize].try_into().unwrap();
-		let slot = [0u8; 12].into();
+		let slot = 0;
 
 		#[extrinsic_call]
 		mint_with_external_uri(

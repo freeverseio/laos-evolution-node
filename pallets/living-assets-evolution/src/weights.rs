@@ -37,10 +37,10 @@ pub trait WeightInfo {
 /// Weights for `pallet_living_assets_evolution` using the Substrate node and recommended hardware.
 pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-	/// Storage: `TemplateModule::CollectionCounter` (r:1 w:1)
-	/// Proof: `TemplateModule::CollectionCounter` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
-	/// Storage: `TemplateModule::CollectionOwner` (r:0 w:1)
-	/// Proof: `TemplateModule::CollectionOwner` (`max_values`: None, `max_size`: Some(56), added: 2531, mode: `MaxEncodedLen`)
+	/// Storage: `LivingAssetsEvolution::CollectionCounter` (r:1 w:1)
+	/// Proof: `LivingAssetsEvolution::CollectionCounter` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
+	/// Storage: `LivingAssetsEvolution::CollectionOwner` (r:0 w:1)
+	/// Proof: `LivingAssetsEvolution::CollectionOwner` (`max_values`: None, `max_size`: Some(56), added: 2531, mode: `MaxEncodedLen`)
 	fn create_collection() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `6`
@@ -50,12 +50,12 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(1_u64))
 			.saturating_add(T::DbWeight::get().writes(2_u64))
 	}
-	/// Storage: `TemplateModule::CollectionOwner` (r:1 w:0)
-	/// Proof: `TemplateModule::CollectionOwner` (`max_values`: None, `max_size`: Some(56), added: 2531, mode: `MaxEncodedLen`)
-	/// Storage: `TemplateModule::ExplicitTokenURI` (r:0 w:1)
-	/// Proof: `TemplateModule::ExplicitTokenURI` (`max_values`: None, `max_size`: Some(562), added: 3037, mode: `MaxEncodedLen`)
-	/// Storage: `TemplateModule::AssetOwner` (r:0 w:1)
-	/// Proof: `TemplateModule::AssetOwner` (`max_values`: None, `max_size`: Some(80), added: 2555, mode: `MaxEncodedLen`)
+	/// Storage: `LivingAssetsEvolution::CollectionOwner` (r:1 w:0)
+	/// Proof: `LivingAssetsEvolution::CollectionOwner` (`max_values`: None, `max_size`: Some(56), added: 2531, mode: `MaxEncodedLen`)
+	/// Storage: `LivingAssetsEvolution::ExplicitTokenURI` (r:0 w:1)
+	/// Proof: `LivingAssetsEvolution::ExplicitTokenURI` (`max_values`: None, `max_size`: Some(562), added: 3037, mode: `MaxEncodedLen`)
+	/// Storage: `LivingAssetsEvolution::AssetOwner` (r:0 w:1)
+	/// Proof: `LivingAssetsEvolution::AssetOwner` (`max_values`: None, `max_size`: Some(80), added: 2555, mode: `MaxEncodedLen`)
 	fn mint_with_external_uri() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `115`
@@ -69,10 +69,10 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 
 // For backwards compatibility and tests.
 impl WeightInfo for () {
-	/// Storage: `TemplateModule::CollectionCounter` (r:1 w:1)
-	/// Proof: `TemplateModule::CollectionCounter` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
-	/// Storage: `TemplateModule::CollectionOwner` (r:0 w:1)
-	/// Proof: `TemplateModule::CollectionOwner` (`max_values`: None, `max_size`: Some(56), added: 2531, mode: `MaxEncodedLen`)
+	/// Storage: `LivingAssetsEvolution::CollectionCounter` (r:1 w:1)
+	/// Proof: `LivingAssetsEvolution::CollectionCounter` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
+	/// Storage: `LivingAssetsEvolution::CollectionOwner` (r:0 w:1)
+	/// Proof: `LivingAssetsEvolution::CollectionOwner` (`max_values`: None, `max_size`: Some(56), added: 2531, mode: `MaxEncodedLen`)
 	fn create_collection() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `6`
@@ -82,12 +82,12 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(1_u64))
 			.saturating_add(RocksDbWeight::get().writes(2_u64))
 	}
-	/// Storage: `TemplateModule::CollectionOwner` (r:1 w:0)
-	/// Proof: `TemplateModule::CollectionOwner` (`max_values`: None, `max_size`: Some(56), added: 2531, mode: `MaxEncodedLen`)
-	/// Storage: `TemplateModule::ExplicitTokenURI` (r:0 w:1)
-	/// Proof: `TemplateModule::ExplicitTokenURI` (`max_values`: None, `max_size`: Some(562), added: 3037, mode: `MaxEncodedLen`)
-	/// Storage: `TemplateModule::AssetOwner` (r:0 w:1)
-	/// Proof: `TemplateModule::AssetOwner` (`max_values`: None, `max_size`: Some(80), added: 2555, mode: `MaxEncodedLen`)
+	/// Storage: `LivingAssetsEvolution::CollectionOwner` (r:1 w:0)
+	/// Proof: `LivingAssetsEvolution::CollectionOwner` (`max_values`: None, `max_size`: Some(56), added: 2531, mode: `MaxEncodedLen`)
+	/// Storage: `LivingAssetsEvolution::ExplicitTokenURI` (r:0 w:1)
+	/// Proof: `LivingAssetsEvolution::ExplicitTokenURI` (`max_values`: None, `max_size`: Some(562), added: 3037, mode: `MaxEncodedLen`)
+	/// Storage: `LivingAssetsEvolution::AssetOwner` (r:0 w:1)
+	/// Proof: `LivingAssetsEvolution::AssetOwner` (`max_values`: None, `max_size`: Some(80), added: 2555, mode: `MaxEncodedLen`)
 	fn mint_with_external_uri() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `115`

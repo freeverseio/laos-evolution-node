@@ -1,6 +1,6 @@
 use crate::{
 	mock::*,
-	types::{AssetId, Slot, TokenUriOf},
+	types::{AssetId, TokenUriOf},
 	CollectionId, Error, Event,
 };
 use frame_support::{assert_noop, assert_ok};
@@ -64,7 +64,7 @@ fn mint_with_external_uri_works() {
 		let collection_id = create_collection(1);
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
-		let slot = [0u8; 12].into();
+		let slot = 0;
 
 		assert_ok!(LivingAssets::mint_with_external_uri(
 			RuntimeOrigin::signed(1),
@@ -79,7 +79,7 @@ fn mint_with_external_uri_works() {
 
 		let expected_asset_id = {
 			let mut buf = [0u8; 32];
-			buf[..12].copy_from_slice(&slot.0);
+			buf[..12].copy_from_slice(&slot.to_be_bytes()[4..]);
 			buf[12..].copy_from_slice(
 				<Test as crate::Config>::AccountIdToH160::convert(1).as_fixed_bytes(),
 			);
@@ -97,7 +97,7 @@ fn mint_with_external_uri_works() {
 
 #[test]
 fn slot_and_owner_to_asset_id_works() {
-	let slot: Slot = [0u8; 12].into();
+	let slot = 0;
 	let owner = 0;
 
 	let expected_asset_id = [0u8; 32].into();
@@ -106,11 +106,11 @@ fn slot_and_owner_to_asset_id_works() {
 
 	let mut expected_asset_id_bytes = [0; 32];
 
-	let slot: Slot = [1u8; 12].into();
+	let slot = 1_u128;
 	let owner: AccountId = 1;
 	let mut owner_bytes = [0u8; 20];
 	owner_bytes[0..8].copy_from_slice(&owner.to_be_bytes());
-	expected_asset_id_bytes[..12].copy_from_slice(&slot.0);
+	expected_asset_id_bytes[..12].copy_from_slice(&slot.to_be_bytes()[4..]);
 	expected_asset_id_bytes[12..].copy_from_slice(&owner_bytes);
 
 	assert_eq!(
@@ -130,7 +130,7 @@ fn mint_with_external_uri_non_owner() {
 			LivingAssets::mint_with_external_uri(
 				RuntimeOrigin::signed(2),
 				collection_id,
-				[0u8; 12].into(),
+				0,
 				1,
 				token_uri.clone()
 			),
@@ -152,7 +152,7 @@ fn mint_with_external_uri_collection_does_not_exist() {
 			LivingAssets::mint_with_external_uri(
 				RuntimeOrigin::signed(1),
 				collection_id,
-				[0u8; 12].into(),
+				0,
 				1,
 				token_uri.clone()
 			),
@@ -172,7 +172,7 @@ fn mint_with_external_uri_asset_already_minted() {
 		assert_ok!(LivingAssets::mint_with_external_uri(
 			RuntimeOrigin::signed(1),
 			collection_id,
-			[0u8; 12].into(),
+			0,
 			1,
 			token_uri.clone()
 		));
@@ -181,7 +181,7 @@ fn mint_with_external_uri_asset_already_minted() {
 			LivingAssets::mint_with_external_uri(
 				RuntimeOrigin::signed(1),
 				collection_id,
-				[0u8; 12].into(),
+				0,
 				1,
 				token_uri.clone()
 			),

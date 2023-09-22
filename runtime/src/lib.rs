@@ -318,7 +318,7 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 
 		// Include the custom logic from the pallet-living-assets-evolution in the runtime.
-		TemplateModule: pallet_living_assets_evolution,
+		LivingAssetsEvolution: pallet_living_assets_evolution,
 
 		BridgeRococoGrandpa: pallet_bridge_grandpa,
 	}
@@ -367,7 +367,7 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
-		[pallet_living_assets_evolution, TemplateModule]
+		[pallet_living_assets_evolution, LivingAssetsEvolution]
 	);
 }
 

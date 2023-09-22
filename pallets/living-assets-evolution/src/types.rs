@@ -1,6 +1,5 @@
 //! Types used in the pallet
 
-use codec::{Decode, Encode, MaxEncodedLen};
 use sp_core::U256;
 use sp_runtime::BoundedVec;
 
@@ -18,19 +17,10 @@ pub type TokenUriOf<T> = BoundedVec<u8, <T as crate::Config>::MaxTokenUriLength>
 pub type AssetId = U256;
 
 /// Slot type - 96-bit unsigned integer
-#[derive(
-	Encode, Decode, Debug, Default, Clone, Copy, PartialEq, Eq, MaxEncodedLen, scale_info::TypeInfo,
-)]
-pub struct Slot(pub [u8; 12]);
+///
+/// NOTE: `u128` is used since there is no native support for 96-bit integers in Rust and using `[u8;12]` is bad for UX
+/// Maybe in the future we can use a custom type for this
+pub type Slot = u128;
 
-impl Into<[u8; 12]> for Slot {
-	fn into(self) -> [u8; 12] {
-		self.0
-	}
-}
-
-impl From<[u8; 12]> for Slot {
-	fn from(bytes: [u8; 12]) -> Self {
-		Self(bytes)
-	}
-}
+/// Max value of `Slot`, used for validation
+pub const MAX_U96: Slot = (1 << 96) - 1;
