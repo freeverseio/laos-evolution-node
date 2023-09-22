@@ -70,7 +70,7 @@ pub mod pallet {
 	/// Token URI which can override the default URI scheme and set explicitly
 	/// This will contain external URI in a raw form
 	#[pallet::storage]
-	#[pallet::getter(fn asset_metadata)]
+	#[pallet::getter(fn explicit_token_uri)]
 	pub type ExplicitTokenURI<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
