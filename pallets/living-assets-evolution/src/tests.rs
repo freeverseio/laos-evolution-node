@@ -1,6 +1,6 @@
 use crate::{
 	mock::*,
-	types::{AssetId, TokenUriOf},
+	types::{AssetId, TokenUriOf, MAX_U96},
 	CollectionId, Error, Event,
 };
 use frame_support::{assert_noop, assert_ok};
@@ -186,6 +186,26 @@ fn mint_with_external_uri_asset_already_minted() {
 				token_uri.clone()
 			),
 			Error::<Test>::AlreadyMinted
+		);
+	});
+}
+
+#[test]
+fn slot_overflow() {
+	new_test_ext().execute_with(|| {
+		let collection_id = create_collection(1);
+		let token_uri: TokenUriOf<Test> =
+			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+
+		assert_noop!(
+			LivingAssets::mint_with_external_uri(
+				RuntimeOrigin::signed(1),
+				collection_id,
+				MAX_U96 + 1,
+				1,
+				token_uri.clone()
+			),
+			sp_runtime::ArithmeticError::Overflow
 		);
 	});
 }
