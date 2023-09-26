@@ -88,7 +88,6 @@ fn mint_with_external_uri_works() {
 		let token_id = LivingAssets::slot_and_owner_to_token_id((slot, owner));
 
 		assert_eq!(token_id, expected_token_id);
-		assert_eq!(LivingAssets::asset_owner(collection_id, token_id), Some(owner));
 		assert_eq!(LivingAssets::token_uri(collection_id, token_id), Some(token_uri.clone()));
 
 		System::assert_has_event(

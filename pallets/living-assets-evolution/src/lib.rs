@@ -54,19 +54,6 @@ pub mod pallet {
 	pub type CollectionOwner<T: Config> =
 		StorageMap<_, Blake2_128Concat, CollectionId, AccountIdOf<T>, OptionQuery>;
 
-	/// Minted assets
-	#[pallet::storage]
-	#[pallet::getter(fn asset_owner)]
-	pub type AssetOwner<T: Config> = StorageDoubleMap<
-		_,
-		Blake2_128Concat,
-		CollectionId,
-		Blake2_128Concat,
-		TokenId,
-		AccountIdOf<T>,
-		OptionQuery,
-	>;
-
 	/// Token URI which can override the default URI scheme and set explicitly
 	/// This will contain external URI in a raw form
 	#[pallet::storage]
@@ -194,15 +181,13 @@ pub mod pallet {
 			let token_id = Self::slot_and_owner_to_token_id((slot, to.clone()));
 
 			ensure!(
-				AssetOwner::<T>::get(collection_id, token_id).is_none(),
+				TokenURI::<T>::get(collection_id, token_id).is_none(),
 				Error::<T>::AlreadyMinted
 			);
 
 			// Slot must be 96 bits
 			// TODO: use a custom type for this https://github.com/freeverseio/laos-evolution-node/issues/77
 			ensure!(slot <= MAX_U96, ArithmeticError::Overflow);
-
-			AssetOwner::<T>::insert(collection_id, token_id, to.clone());
 
 			TokenURI::<T>::insert(collection_id, token_id, token_uri.clone());
 

@@ -40,7 +40,6 @@ mod benchmarks {
 			token_uri.clone(),
 		);
 
-		assert_eq!(AssetOwner::<T>::get(0, token_id), Some(caller));
 		assert_eq!(TokenURI::<T>::get(0, token_id), Some(token_uri));
 	}
 
