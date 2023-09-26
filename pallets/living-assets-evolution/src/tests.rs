@@ -1,6 +1,6 @@
 use crate::{
 	mock::*,
-	types::{AssetId, TokenUriOf, MAX_U96},
+	types::{TokenId, TokenUriOf, MAX_U96},
 	CollectionId, Error, Event,
 };
 use frame_support::{assert_noop, assert_ok};
@@ -65,32 +65,41 @@ fn mint_with_external_uri_works() {
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
 		let slot = 0;
+		let owner = 1;
 
 		assert_ok!(LivingAssets::mint_with_external_uri(
 			RuntimeOrigin::signed(1),
 			collection_id,
 			slot,
-			1,
+			owner,
 			token_uri.clone()
 		));
 
-		assert_eq!(LivingAssets::asset_owner(collection_id, slot), Some(1));
-		assert_eq!(LivingAssets::explicit_token_uri(collection_id, slot), Some(token_uri.clone()));
-
-		let expected_asset_id = {
+		let expected_token_id = {
 			let mut buf = [0u8; 32];
 			buf[..12].copy_from_slice(&slot.to_be_bytes()[4..]);
 			buf[12..].copy_from_slice(
-				<Test as crate::Config>::AccountIdToH160::convert(1).as_fixed_bytes(),
+				<Test as crate::Config>::AccountIdToH160::convert(owner).as_fixed_bytes(),
 			);
 
-			AssetId::from(buf)
+			TokenId::from(buf)
 		};
+
+		let token_id = LivingAssets::slot_and_owner_to_token_id((slot, owner));
+
+		assert_eq!(token_id, expected_token_id);
+		assert_eq!(LivingAssets::asset_owner(collection_id, token_id), Some(owner));
+		assert_eq!(LivingAssets::token_uri(collection_id, token_id), Some(token_uri.clone()));
+
 		System::assert_has_event(
-			Event::Minted { collection_id, slot, to: 1, asset_id: expected_asset_id }.into(),
-		);
-		System::assert_has_event(
-			Event::ExplicitTokenURISet { collection_id, slot, token_uri }.into(),
+			Event::MintedWithExternalTokenURI {
+				collection_id,
+				slot,
+				to: owner,
+				token_id: expected_token_id,
+				token_uri,
+			}
+			.into(),
 		);
 	});
 }
@@ -100,22 +109,22 @@ fn slot_and_owner_to_asset_id_works() {
 	let slot = 0;
 	let owner = 0;
 
-	let expected_asset_id = [0u8; 32].into();
+	let expected_token_id = [0u8; 32].into();
 
-	assert_eq!(LivingAssets::slot_and_owner_to_asset_id((slot, owner)), expected_asset_id);
+	assert_eq!(LivingAssets::slot_and_owner_to_token_id((slot, owner)), expected_token_id);
 
-	let mut expected_asset_id_bytes = [0; 32];
+	let mut expected_token_id_bytes = [0; 32];
 
 	let slot = 1_u128;
 	let owner: AccountId = 1;
 	let mut owner_bytes = [0u8; 20];
 	owner_bytes[0..8].copy_from_slice(&owner.to_be_bytes());
-	expected_asset_id_bytes[..12].copy_from_slice(&slot.to_be_bytes()[4..]);
-	expected_asset_id_bytes[12..].copy_from_slice(&owner_bytes);
+	expected_token_id_bytes[..12].copy_from_slice(&slot.to_be_bytes()[4..]);
+	expected_token_id_bytes[12..].copy_from_slice(&owner_bytes);
 
 	assert_eq!(
-		LivingAssets::slot_and_owner_to_asset_id((slot, owner)),
-		AssetId::from(expected_asset_id_bytes)
+		LivingAssets::slot_and_owner_to_token_id((slot, owner)),
+		TokenId::from(expected_token_id_bytes)
 	);
 }
 
@@ -201,7 +210,7 @@ fn slot_overflow() {
 			LivingAssets::mint_with_external_uri(
 				RuntimeOrigin::signed(1),
 				collection_id,
-				MAX_U96 + 1,
+				MAX_U96 + 1, // pass a value greater than 2^96 - 1
 				1,
 				token_uri.clone()
 			),

@@ -29,6 +29,7 @@ mod benchmarks {
 		let token_uri: TokenUriOf<T> =
 			vec![0; T::MaxTokenUriLength::get() as usize].try_into().unwrap();
 		let slot = 0;
+		let token_id = LivingAssetsEvo::<T>::slot_and_owner_to_token_id((slot, caller.clone()));
 
 		#[extrinsic_call]
 		mint_with_external_uri(
@@ -39,8 +40,8 @@ mod benchmarks {
 			token_uri.clone(),
 		);
 
-		assert_eq!(AssetOwner::<T>::get(0, slot), Some(caller));
-		assert_eq!(ExplicitTokenURI::<T>::get(0, slot), Some(token_uri));
+		assert_eq!(AssetOwner::<T>::get(0, token_id), Some(caller));
+		assert_eq!(TokenURI::<T>::get(0, token_id), Some(token_uri));
 	}
 
 	impl_benchmark_test_suite!(LivingAssetsEvo, crate::mock::new_test_ext(), crate::mock::Test);
