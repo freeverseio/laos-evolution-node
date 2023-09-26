@@ -2,7 +2,7 @@
 
 For a comprehensive understanding of the LAOS system, please refer to the [LAOS Technical Whitepaper](https://github.com/freeverseio/laos-whitepaper/blob/main/laos.pdf), which extensively covers all components.
 
-The LAOS Evolution Solochain is a specialized chain constructed on Polkadot, focusing primarily on the evolution of NFTs (Non-Fungible Tokens).
+The LAOS Evolution Solochain is a specialized chain constructed on Polkadot, focusing primarily on the minting and evolution of NFTs (Non-Fungible Tokens).
 
 ## Run your own Node
 
